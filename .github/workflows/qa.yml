@@ -20,7 +20,29 @@ jobs:
           for file in script.js site.js studio-core.js studio-ui.js estimate.js; do node --check "$file"; done
           python3 - <<'PY'
           from html.parser import HTMLParser
-          HTMLParser().feed(open('index.html', encoding='utf-8').read())
+          from pathlib import Path
+          import json
+          import re
+
+          html = Path('index.html').read_text(encoding='utf-8')
+          HTMLParser().feed(html)
+
+          start = html.index('<script type="application/ld+json">') + len('<script type="application/ld+json">')
+          end = html.index('</script>', start)
+          schema = json.loads(html[start:end])
+          assert schema['@type'] == 'HousePainter'
+          assert len(schema['areaServed']) >= 13
+          assert '<span id="year">2026</span>' in html
+          assert 'class="header-contact"' in html
+          assert 'class="nav-contact"' in html
+          assert 'class="standard-flow"' in html
+          assert 'class="closing-contact"' in html
+          assert 'assets/cimo-interior.webp' in html
+          assert 'assets/cimo-exterior-garage.webp' in html
+          assert 'assets/cimo-surface-prep.webp' in html
+          assert 'assets/cimo-small-business.webp' in html
+          assert 'class="hero-img"' in html and 'fetchpriority="high"' in html
+          assert not re.search(r'href="(?:tel|sms):(?!\+1)', html)
           PY
           test ! -d server
           test ! -f render.yaml
@@ -39,16 +61,19 @@ jobs:
           grep -q "selected_color" estimate.js
           grep -q "surface_description" estimate.js
           grep -q "estimate-next-steps" estimate.js
-          grep -q "fonts.googleapis.com/css2" script.js
-          grep -q "fonts.googleapis.com/css2" .github/workflows/pages.yml
-          ! grep -q "@font-face" base.css
-          grep -q "photo-1652829069629-959f8927f608" site.js
-          grep -q "photo-1742900280864-bcc27353ceba" site.js
-          grep -q "photo-1768839725085-829e6ac7ac26" site.js
-          grep -q "photo-1652829069834-2c05031199c5" site.js
-          grep -q "Try a sample room" studio-ui.js
-          grep -q "Fine-tune selection" studio-ui.js
+          grep -q "lastTrigger" estimate.js
+          grep -q "dialog.addEventListener('close'" estimate.js
+          grep -q "fonts.googleapis.com/css2" index.html
+          ! grep -q "loadGoogleFonts" script.js
+          ! grep -q "applyContentRefresh" site.js
+          ! grep -q "removeAttribute('srcset')" site.js
+          grep -q "aria-current" site.js
           grep -q "studio-quickstart" studio-ui.js
+          grep -q "Fine-tune selection" studio-ui.js
           grep -q "max-width:1100px" responsive.css
+          ! grep -q "footer>div:nth-child(4){display:none" responsive.css
+          ! grep -q "\.steps" responsive.css site.css studio.css
           grep -q "globalCompositeOperation = 'color'" studio-core.js
-          grep -q "\\.canvas-empty.*hidden = hasMask\|\\$('.canvas-empty').hidden = hasMask" studio-core.js
+          test -f robots.txt
+          test -f sitemap.xml
+          test -f 404.html
