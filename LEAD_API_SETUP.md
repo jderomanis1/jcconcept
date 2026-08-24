@@ -1,27 +1,46 @@
-# Cimo Lead API setup (website administrator)
+# Cimo Lead API setup
 
-Justin is only the lead recipient. He does not need GitHub, Render, Gmail, API, environment-variable, Twilio, or deployment access.
+The website uses its own Express lead endpoint. It does **not** use Formspree, Basin, EmailJS, Typeform, Zapier, Make, or another form-processing service.
 
-## Newbie 101
+Production flow:
 
-1. Create a generic Gmail sender account that **you**, the website administrator, control. Do not use Justin's Gmail.
-2. In that Google account, enable 2-Step Verification, then create a Google App Password.
-3. In Render, create a **Web Service** from this repository. Render can read `render.yaml`; the service root is `server/`.
-4. Add `GMAIL_USER`, `GMAIL_APP_PASSWORD`, and Justin's private address as `LEAD_EMAIL_TO` in Render's Environment page. Never put their values in GitHub.
-5. Set `ALLOWED_ORIGINS` to comma-separated exact origins, initially `https://jderomanis1.github.io`; add a future custom Cimo origin after a comma.
-6. Deploy and confirm `/health` responds with `{ "ok": true }`.
-7. Copy the Render service URL.
-8. In frontend `config.js`, replace `CONTACT_API_URL` with the service URL (no `/api/contact` suffix).
-9. Commit that public URL and redeploy GitHub Pages.
-10. Submit a clearly labeled test estimate and verify Justin receives its readable email.
-11. Hit **Reply** and verify the reply is addressed to the test customer's email.
-12. Submit a Color Studio estimate and verify the single `cimo-color-preview.jpg` attachment.
-13. Test an estimate without an image and the phone fallback.
+`Cimo website → Cimo Express API → Gmail SMTP → jcimo47@gmail.com`
 
-## Optional SMS (later)
+The browser never receives Gmail credentials or the private mail configuration. The Color Studio preview is held in memory long enough to attach it to the lead email and is not saved by the application.
 
-Email is primary. Leave `SMS_ENABLED=false` until ready. To enable a concise alert, configure `SMS_ENABLED=true`, `SMS_TO`, `TWILIO_ACCOUNT_SID`, `TWILIO_AUTH_TOKEN`, and `TWILIO_FROM` in Render. An SMS error does not turn an emailed lead into a failed request.
+## Administrator setup
 
-## Operations and privacy
+1. Create or use a generic Cimo Gmail sender account controlled by the website administrator. Do not use the lead recipient account as the application credential unless you intentionally want it to be the sender too.
+2. Enable 2-Step Verification on that Google account and create a Google App Password.
+3. In Render, create a Web Service from this repository. The checked-in `render.yaml` points Render at the `server/` directory and exposes `/health` for health checks.
+4. In Render's Environment settings, add these private/runtime values:
 
-The API accepts one in-memory JPEG, PNG, or WebP preview, attaches it to email, and retains no file. Rotate an App Password in Google and update Render if it is ever exposed. Render—not Justin—owns all configuration. Use Render logs only for delivery status; the application never logs complete lead payloads or secrets.
+   ```text
+   GMAIL_USER=<generic Cimo sender Gmail address>
+   GMAIL_APP_PASSWORD=<Google App Password>
+   LEAD_EMAIL_TO=jcimo47@gmail.com
+   ALLOWED_ORIGINS=https://jderomanis1.github.io
+   ```
+
+   `RATE_LIMIT=10` is optional; 10 requests per 15 minutes is the application default.
+5. Deploy the service and verify `GET /health` returns `{ "ok": true }`.
+6. Copy the public HTTPS base URL for the service.
+7. In `config.js`, replace `CONTACT_API_URL` with that base URL only. Do not add `/api/contact`; the frontend appends it.
+8. Commit the public API URL and allow GitHub Pages to redeploy.
+9. Submit a clearly labeled test estimate from the live site and verify it reaches `jcimo47@gmail.com`.
+10. If the test includes an email address, hit Reply and confirm the reply is addressed to the customer's email.
+11. Submit a Color Studio estimate and verify `cimo-color-preview.jpg` is attached.
+
+## Safe failure behavior
+
+If `config.js` does not contain a valid HTTPS API base URL, the site does not let a visitor fill in a form that cannot send. The estimate dialog immediately shows the clickable phone fallback, `585-305-4365`.
+
+If the backend is configured but Gmail delivery fails, the customer's entered values remain on screen and the site asks them to retry or call.
+
+## Security and privacy
+
+- Never commit `GMAIL_APP_PASSWORD` or another credential to GitHub.
+- `LEAD_EMAIL_TO=jcimo47@gmail.com` is a destination address, not a secret, but delivery remains controlled by the server.
+- The backend validates required fields, validates optional email format, validates phone format, rate-limits requests, enforces CORS, uses a honeypot, escapes submitted values in HTML email, and limits uploads by count, size, and MIME type.
+- Uploaded preview files are processed from memory and are not persisted by the application.
+- Do not log complete lead payloads or secrets.
