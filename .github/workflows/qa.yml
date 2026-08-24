@@ -29,7 +29,12 @@ jobs:
           grep -q "_subject" estimate.js
           grep -q "_template" estimate.js
           grep -q "_captcha" estimate.js
+          grep -q "_honey" estimate.js
           grep -q "postEstimate(endpoint, raw, false)" estimate.js
           grep -q "selected_color" estimate.js
           grep -q "surface_description" estimate.js
+          grep -q "fonts.googleapis.com/css2" script.js
+          grep -q "fonts.googleapis.com/css2" .github/workflows/pages.yml
+          ! grep -q "@font-face" base.css
           grep -q "globalCompositeOperation = 'color'" studio-core.js
+          grep -q "\\.canvas-empty.*hidden = hasMask\|\\$('.canvas-empty').hidden = hasMask" studio-core.js
