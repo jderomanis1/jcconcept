@@ -1,0 +1,37 @@
+name: Cimo QA
+
+on:
+  pull_request:
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  verify:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 20
+      - name: Frontend syntax and policy checks
+        run: |
+          node --check script.js
+          python3 - <<'PY'
+          from html.parser import HTMLParser
+          HTMLParser().feed(open('index.html', encoding='utf-8').read())
+          PY
+          ! grep -RniE 'fonts\.googleapis|formspree|basin|emailjs|twilio|SMS_' index.html styles.css script.js server LEAD_API_SETUP.md
+      - name: Verify vendored font package paths
+        run: |
+          npm install --prefix /tmp/cimo-fonts --no-save --ignore-scripts \
+            @fontsource-variable/manrope@5.3.0 \
+            @fontsource-variable/dm-sans@5.3.0
+          test -f /tmp/cimo-fonts/node_modules/@fontsource-variable/manrope/files/manrope-latin-wght-normal.woff2
+          test -f /tmp/cimo-fonts/node_modules/@fontsource-variable/dm-sans/files/dm-sans-latin-wght-normal.woff2
+      - name: Backend tests
+        working-directory: server
+        run: |
+          npm install --ignore-scripts
+          npm test
