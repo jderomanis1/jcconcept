@@ -69,33 +69,59 @@ $('#use-preview').addEventListener('click', async () => {
   }
 });
 
-function buildSubmission(raw, includePreview) {
+function submissionFields(raw) {
+  const website = String(raw.get('website') || '').trim();
+  return {
+    name: String(raw.get('name') || '').trim(),
+    phone: String(raw.get('phone') || '').trim(),
+    service: String(raw.get('service') || '').trim(),
+    email: String(raw.get('email') || '').trim(),
+    description: String(raw.get('description') || '').trim(),
+    lead_source: studioPreview ? 'Cimo Color Studio' : 'Website Estimate',
+    selected_color: studioPreview?.color || '',
+    surface_description: studioPreview?.surface || '',
+    _subject: 'New Cimo estimate request',
+    _template: 'table',
+    _captcha: 'false',
+    _honey: website,
+    _url: window.location.href
+  };
+}
+
+function buildMultipartSubmission(raw) {
   const body = new FormData();
-  for (const key of ['name', 'phone', 'service', 'email', 'description', 'website']) {
-    body.append(key, String(raw.get(key) || '').trim());
-  }
-  body.append('lead_source', studioPreview ? 'Cimo Color Studio' : 'Website Estimate');
-  body.append('selected_color', studioPreview?.color || '');
-  body.append('surface_description', studioPreview?.surface || '');
-  body.append('_subject', 'New Cimo estimate request');
-  body.append('_template', 'table');
-  body.append('_captcha', 'false');
-  body.append('_honey', String(raw.get('website') || '').trim());
-  if (includePreview && studioPreview?.blob) body.append('preview', studioPreview.blob, 'cimo-color-preview.jpg');
+  Object.entries(submissionFields(raw)).forEach(([key, value]) => body.append(key, value));
+  if (studioPreview?.blob) body.append('preview', studioPreview.blob, 'cimo-color-preview.jpg');
   return body;
 }
 
-async function postEstimate(endpoint, raw, includePreview) {
-  const response = await fetch(endpoint, {
-    method: 'POST',
-    headers: { Accept: 'application/json' },
-    body: buildSubmission(raw, includePreview)
-  });
+async function parseFormSubmitResponse(response) {
   const result = await response.json().catch(() => null);
   if (!response.ok || result?.success === false || result?.success === 'false') {
-    throw new Error(`FormSubmit returned ${response.status}`);
+    throw new Error(result?.message || `FormSubmit returned ${response.status}`);
   }
   return result;
+}
+
+async function postEstimate(endpoint, raw, includePreview) {
+  if (includePreview && studioPreview?.blob) {
+    const response = await fetch(endpoint, {
+      method: 'POST',
+      headers: { Accept: 'application/json' },
+      body: buildMultipartSubmission(raw)
+    });
+    return parseFormSubmitResponse(response);
+  }
+
+  const response = await fetch(endpoint, {
+    method: 'POST',
+    headers: {
+      'Content-Type': 'application/json',
+      Accept: 'application/json'
+    },
+    body: JSON.stringify(submissionFields(raw))
+  });
+  return parseFormSubmitResponse(response);
 }
 
 estimateForm.addEventListener('submit', async (event) => {
@@ -135,7 +161,8 @@ estimateForm.addEventListener('submit', async (event) => {
     studioPreview = null;
     $('#preview-attachment-note').hidden = true;
     $('#estimate-done').focus();
-  } catch {
+  } catch (error) {
+    console.error('Estimate submission failed', error);
     submitStatus.textContent = 'We couldn’t send your request. Please try again or call 585-305-4365.';
     button.disabled = false;
     button.textContent = 'Request My Free Estimate';
