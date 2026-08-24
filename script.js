@@ -1,176 +1,30 @@
-const config = window.CIMO_CONFIG || {};
-const endpointConfigured = /^https:\/\/formspree\.io\/f\/[a-zA-Z0-9]+$/.test(config.formspreeEndpoint || '') && !config.formspreeEndpoint.includes('REPLACE_');
+'use strict';
+const $=(s,r=document)=>r.querySelector(s), $$=(s,r=document)=>[...r.querySelectorAll(s)];
+const toggle=$('.menu-toggle'),nav=$('#site-nav');toggle.onclick=()=>{const o=toggle.getAttribute('aria-expanded')==='true';toggle.setAttribute('aria-expanded',!o);nav.classList.toggle('open',!o)};$$('#site-nav a,#site-nav button').forEach(x=>x.onclick=()=>nav.classList.remove('open'));$('#year').textContent=new Date().getFullYear();
+const reveal=new IntersectionObserver(es=>es.forEach(e=>e.isIntersecting&&e.target.classList.add('visible')),{threshold:.08});$$('.reveal').forEach(e=>reveal.observe(e));
 
-const toggle = document.querySelector('.menu-toggle');
-const nav = document.querySelector('#site-nav');
-toggle.addEventListener('click', () => {
-  const open = toggle.getAttribute('aria-expanded') === 'true';
-  toggle.setAttribute('aria-expanded', String(!open));
-  nav.classList.toggle('open', !open);
-  toggle.querySelector('.sr-only').textContent = open ? 'Open menu' : 'Close menu';
-});
-nav.querySelectorAll('a').forEach(link => link.addEventListener('click', () => {
-  nav.classList.remove('open');
-  toggle.setAttribute('aria-expanded', 'false');
-}));
+const palette=[['Warm Whites','Soft Ivory','#eee8dc'],['Warm Whites','Warm Linen','#ddd1bd'],['Warm Whites','Porcelain','#f3eee4'],['Cool Whites','Cloud White','#e7ebea'],['Cool Whites','Quiet Frost','#dce3e2'],['Cool Whites','Pale Mist','#d9dfdc'],['Neutrals','Stone','#aaa091'],['Neutrals','Mushroom','#918476'],['Neutrals','Pewter','#777773'],['Warm Earth','Terracotta','#a85e49'],['Warm Earth','Clay','#bd8068'],['Warm Earth','Canyon','#855142'],['Greens','Sage','#89927a'],['Greens','Olive','#687052'],['Greens','Forest','#394c3d'],['Blues','Coastal Blue','#66899a'],['Blues','Slate Blue','#526b7a'],['Blues','Deep Navy','#263947'],['Deep Colors','Charcoal','#343534'],['Deep Colors','Brick','#853b32'],['Deep Colors','Plum','#59404f'],['Deep Colors','Ink','#252a30'],['Neutrals','Sand','#c3af91'],['Warm Earth','Ochre','#aa7b43']];
+const p=$('#palette');palette.forEach(([g,n,c])=>{const b=document.createElement('button');b.className='swatch';b.style.setProperty('--swatch',c);b.title=`${g}: ${n}`;b.setAttribute('aria-label',`${n}, ${c}`);b.draggable=true;b.dataset.name=n;b.dataset.color=c;b.onclick=()=>Studio.setColor(n,c);b.ondragstart=e=>e.dataTransfer.setData('text/plain',JSON.stringify({n,c}));p.append(b)});
+const Studio=(()=>{const canvas=$('#studio-canvas'),ctx=canvas.getContext('2d',{willReadFrequently:true}),mask=document.createElement('canvas'),mctx=mask.getContext('2d',{willReadFrequently:true});let source=null,original=null,color='#b76b55',colorName='Custom #B76B55',tool='smart',drawing=false,history=[],attached=null;
+ function save(){if(!original)return;history.push(mctx.getImageData(0,0,mask.width,mask.height));if(history.length>15)history.shift();$('#undo').disabled=history.length<2}
+ function render(split=Number($('#compare-range').value)){if(!original)return;const out=new ImageData(new Uint8ClampedArray(original.data),original.width,original.height),md=mctx.getImageData(0,0,mask.width,mask.height).data,r=parseInt(color.slice(1,3),16),g=parseInt(color.slice(3,5),16),b=parseInt(color.slice(5,7),16);for(let i=0;i<out.data.length;i+=4){const x=(i/4)%canvas.width;if(md[i+3]&&x<canvas.width*split/100){const lum=.2126*original.data[i]+.7152*original.data[i+1]+.0722*original.data[i+2];out.data[i]=r*(lum/145);out.data[i+1]=g*(lum/145);out.data[i+2]=b*(lum/145)}}ctx.putImageData(out,0,0)}
+ function point(e){const r=canvas.getBoundingClientRect();return{x:Math.floor((e.clientX-r.left)*canvas.width/r.width),y:Math.floor((e.clientY-r.top)*canvas.height/r.height)}}
+ function smart(x,y){save();const d=original.data,w=canvas.width,h=canvas.height,start=(y*w+x)*4,target=[d[start],d[start+1],d[start+2]],tol=Number($('#tolerance').value)*4.42,seen=new Uint8Array(w*h),stack=[x,y],out=mctx.getImageData(0,0,w,h);while(stack.length){const cy=stack.pop(),cx=stack.pop(),q=cy*w+cx;if(cx<0||cy<0||cx>=w||cy>=h||seen[q])continue;seen[q]=1;const i=q*4,dist=Math.abs(d[i]-target[0])+Math.abs(d[i+1]-target[1])+Math.abs(d[i+2]-target[2]);if(dist>tol)continue;out.data[i+3]=255;stack.push(cx+1,cy,cx-1,cy,cx,cy+1,cx,cy-1)}mctx.putImageData(out,0,0);save();render();enable()}
+ function paint(e){if(!original)return;const q=point(e);if(tool==='smart'){smart(q.x,q.y);return}mctx.globalCompositeOperation=tool==='erase'?'destination-out':'source-over';mctx.fillStyle='#fff';mctx.beginPath();mctx.arc(q.x,q.y,Number($('#brush-size').value)/2,0,Math.PI*2);mctx.fill();render();enable()}
+ function enable(){$('#reset').disabled=false;$('#use-preview').disabled=false;$('.compare-controls').hidden=false}
+ async function load(file){if(!file)return;if(!['image/jpeg','image/png','image/webp'].includes(file.type)){status('Please choose a JPEG, PNG or WebP image.');return}if(file.size>10*1024*1024){status('That photo is larger than 10 MB. Please choose a smaller image.');return}const bmp=await createImageBitmap(file,{imageOrientation:'from-image'}),scale=Math.min(1,1800/Math.max(bmp.width,bmp.height));canvas.width=Math.round(bmp.width*scale);canvas.height=Math.round(bmp.height*scale);mask.width=canvas.width;mask.height=canvas.height;ctx.drawImage(bmp,0,0,canvas.width,canvas.height);source=document.createElement('canvas');source.width=canvas.width;source.height=canvas.height;source.getContext('2d').drawImage(canvas,0,0);original=ctx.getImageData(0,0,canvas.width,canvas.height);history=[];mctx.clearRect(0,0,mask.width,mask.height);save();$('.canvas-wrap').hidden=false;$('#upload-zone').classList.add('compact');status('Photo ready. Choose Smart Select, then click a surface.');render()}
+ function status(s){$('#studio-status').textContent=s}
+ function composite(){render(100);const max=1600,w=Math.min(max,canvas.width*2),half=w/2,h=Math.round(canvas.height*(half/canvas.width)),c=document.createElement('canvas');c.width=w;c.height=h;c.getContext('2d').drawImage(source,0,0,half,h);c.getContext('2d').drawImage(canvas,half,0,half,h);const cc=c.getContext('2d');cc.fillStyle='rgba(20,19,17,.8)';cc.fillRect(0,0,90,28);cc.fillRect(half,0,90,28);cc.fillStyle='white';cc.font='bold 12px sans-serif';cc.fillText('ORIGINAL',12,19);cc.fillText('PREVIEW',half+12,19);return new Promise(ok=>c.toBlob(ok,'image/jpeg',.83))}
+ canvas.onpointerdown=e=>{drawing=true;canvas.setPointerCapture(e.pointerId);if(tool!=='smart')save();paint(e)};canvas.onpointermove=e=>drawing&&tool!=='smart'&&paint(e);canvas.onpointerup=()=>{if(drawing&&tool!=='smart')save();drawing=false};canvas.ondragover=e=>e.preventDefault();canvas.ondrop=e=>{e.preventDefault();try{const d=JSON.parse(e.dataTransfer.getData('text/plain'));setColor(d.n,d.c);const q=point(e);smart(q.x,q.y)}catch{}};
+ function setColor(n,c){colorName=`${n} / ${c.toUpperCase()}`;color=c;$$('.swatch').forEach(b=>b.classList.toggle('selected',b.dataset.color===c));render()}
+ return{load,setColor,undo(){if(history.length>1){history.pop();mctx.putImageData(history.at(-1),0,0);render();$('#undo').disabled=history.length<2}},reset(){mctx.clearRect(0,0,mask.width,mask.height);history=[];save();render();$('#use-preview').disabled=true;$('.compare-controls').hidden=true},setTool(t){tool=t},render,async attach(){attached=await composite();return{blob:attached,color:colorName,surface:$('#surface-notes').value}}};})();
+$('#photo-input').onchange=e=>Studio.load(e.target.files[0]);const zone=$('#upload-zone');zone.ondragover=e=>{e.preventDefault();zone.classList.add('drag')};zone.ondragleave=()=>zone.classList.remove('drag');zone.ondrop=e=>{e.preventDefault();zone.classList.remove('drag');if(e.dataTransfer.files.length!==1){$('#studio-status').textContent='Please choose one image only.';return}Studio.load(e.dataTransfer.files[0])};$$('.tool').forEach(b=>b.onclick=()=>{$$('.tool').forEach(x=>x.classList.remove('active'));b.classList.add('active');Studio.setTool(b.dataset.tool)});$('#tolerance').oninput=e=>$('#tolerance-value').value=e.target.value;$('#brush-size').oninput=e=>$('#brush-value').value=e.target.value;$('#custom-color').oninput=e=>Studio.setColor(`Custom ${e.target.value.toUpperCase()}`,e.target.value);$('#undo').onclick=()=>Studio.undo();$('#reset').onclick=()=>Studio.reset();$('#compare-range').oninput=e=>Studio.render(e.target.value);$('#show-original').onpointerdown=()=>Studio.render(0);$('#show-original').onpointerup=$('#show-original').onpointerleave=()=>Studio.render($('#compare-range').value);$('#show-preview').onclick=()=>{$('#compare-range').value=100;Studio.render(100)};
 
-const compare = document.querySelector('.compare');
-compare.querySelector('input').addEventListener('input', event => compare.style.setProperty('--position', `${event.target.value}%`));
-document.querySelectorAll('img').forEach(image => {
-  const unavailable = () => image.classList.add('image-unavailable');
-  image.addEventListener('error', unavailable);
-  if (image.complete && image.naturalWidth === 0) unavailable();
-});
-
-function openDialog(dialog) {
-  if (typeof dialog.showModal === 'function') dialog.showModal();
-}
-
-const estimateDialog = document.querySelector('#estimate-dialog');
-document.querySelectorAll('.estimate-open').forEach(button => button.addEventListener('click', () => openDialog(estimateDialog)));
-estimateDialog.querySelector('.dialog-close').addEventListener('click', () => estimateDialog.close());
-estimateDialog.querySelector('.dialog-done').addEventListener('click', () => estimateDialog.close());
-estimateDialog.addEventListener('click', event => { if (event.target === estimateDialog) estimateDialog.close(); });
-
-async function submitLead(formData) {
-  if (!endpointConfigured) throw new Error('setup');
-  const response = await fetch(config.formspreeEndpoint, {
-    method: 'POST',
-    body: formData,
-    headers: { Accept: 'application/json' }
-  });
-  if (!response.ok) throw new Error('delivery');
-}
-
-const estimateForm = document.querySelector('#estimate-form');
-estimateForm.addEventListener('submit', async event => {
-  event.preventDefault();
-  if (!estimateForm.reportValidity()) return;
-  const button = estimateForm.querySelector('.submit-button');
-  const status = estimateForm.querySelector('.form-status');
-  button.disabled = true;
-  button.textContent = 'Sending…';
-  status.textContent = '';
-  try {
-    await submitLead(new FormData(estimateForm));
-    estimateForm.hidden = true;
-    estimateDialog.querySelector('.form-success').hidden = false;
-  } catch (error) {
-    status.textContent = error.message === 'setup'
-      ? 'Online requests are being connected. Please call 585-305-4365 to request your free estimate.'
-      : 'We couldn’t send your request. Please try again or call 585-305-4365.';
-  } finally {
-    button.disabled = false;
-    button.textContent = 'Send Estimate Request';
-  }
-});
-
-const assistantDialog = document.querySelector('#assistant-dialog');
-const assistantForm = document.querySelector('#assistant-form');
-const assistantMessage = assistantDialog.querySelector('.assistant-message');
-const progressText = assistantDialog.querySelector('.progress-text');
-const progressBar = assistantDialog.querySelector('.progress-track i');
-let assistantStep = 0;
-let assistantData = {};
-
-const steps = [
-  { key: 'project_type', prompt: 'First, is this project for a home or a small business?', type: 'choices', options: ['Residential', 'Small Business'] },
-  { key: 'paint_area', prompt: 'What would you like painted?', placeholder: 'Example: living room walls and ceiling', type: 'text' },
-  { key: 'service', prompt: 'Which kind of project best fits?', type: 'choices', options: ['Interior Painting', 'Exterior Painting', 'Garage Painting', 'Other'] },
-  { key: 'project_size', prompt: 'About how large is the project?', placeholder: 'Example: two rooms, one exterior side, or one garage', type: 'text' },
-  { key: 'surface_condition', prompt: 'How would you describe the current surface condition?', type: 'choices', options: ['Generally sound', 'Some wear or marks', 'Peeling or visible damage', 'Not sure'] },
-  { key: 'prep_needed', prompt: 'Is there visible peeling, damage, patching or other preparation you want us to know about?', type: 'choices', options: ['No visible concerns', 'Minor patching or repair', 'Peeling or damage', 'Not sure'] },
-  { key: 'timing', prompt: 'When would you ideally like the project considered?', type: 'choices', options: ['As soon as practical', 'Within one month', 'Within 1–3 months', 'Planning ahead'] },
-  { key: 'name', prompt: 'Who should Cimo follow up with?', placeholder: 'Your name', autocomplete: 'name', type: 'text' },
-  { key: 'phone', prompt: 'What phone number should we include?', placeholder: '(585) 000-0000', autocomplete: 'tel', inputType: 'tel', type: 'text' },
-  { key: 'email', prompt: 'What email address should we include?', placeholder: 'you@example.com', autocomplete: 'email', inputType: 'email', type: 'text' },
-  { key: 'preferred_contact', prompt: 'How would you prefer Cimo to respond?', type: 'choices', options: ['Phone Call', 'Email'] },
-  { key: 'additional_details', prompt: 'Anything else Justin should know or confirm? This is optional.', placeholder: 'Questions, access details, or other helpful context', type: 'textarea', optional: true },
-  { key: 'review', prompt: 'Here’s what will be sent. Please review your project request.', type: 'review' }
-];
-
-function escapeHtml(value = '') {
-  return String(value).replace(/[&<>'"]/g, character => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', "'": '&#39;', '"': '&quot;' })[character]);
-}
-
-function renderAssistant() {
-  const step = steps[assistantStep];
-  const progress = Math.round((assistantStep / (steps.length - 1)) * 100);
-  progressBar.style.width = `${progress}%`;
-  progressText.textContent = step.type === 'review' ? 'Ready to review' : `Step ${assistantStep + 1} of ${steps.length - 1}`;
-  assistantMessage.innerHTML = `<p>${step.prompt}</p>`;
-  let control = '';
-  if (step.type === 'choices') {
-    control = `<div class="assistant-choices">${step.options.map(option => `<button type="button" data-value="${escapeHtml(option)}" class="assistant-choice${assistantData[step.key] === option ? ' selected' : ''}">${escapeHtml(option)}</button>`).join('')}</div>`;
-  } else if (step.type === 'review') {
-    const rows = [['PROJECT TYPE', 'project_type'], ['SERVICE', 'service'], ['WHAT TO PAINT', 'paint_area'], ['SIZE', 'project_size'], ['SURFACE', 'surface_condition'], ['PREP', 'prep_needed'], ['TIMING', 'timing'], ['CONTACT', 'contact'], ['PREFERRED RESPONSE', 'preferred_contact'], ['ADDITIONAL DETAILS', 'additional_details']];
-    const values = { ...assistantData, contact: `${assistantData.name || ''} · ${assistantData.phone || ''} · ${assistantData.email || ''}` };
-    control = `<dl class="assistant-summary">${rows.filter(([, key]) => values[key]).map(([label, key]) => `<div><dt>${label}</dt><dd>${escapeHtml(values[key])}</dd></div>`).join('')}</dl><button class="button assistant-send" type="submit">Send Project Request</button><p class="assistant-status" role="status" aria-live="polite"></p>`;
-  } else {
-    const tag = step.type === 'textarea' ? 'textarea' : 'input';
-    const attributes = tag === 'input' ? `type="${step.inputType || 'text'}"` : 'rows="4"';
-    control = `<label class="sr-only" for="assistant-input">${step.prompt}</label><${tag} id="assistant-input" ${attributes} placeholder="${escapeHtml(step.placeholder)}" ${step.autocomplete ? `autocomplete="${step.autocomplete}"` : ''}>${tag === 'textarea' ? escapeHtml(assistantData[step.key] || '') : ''}</${tag === 'textarea' ? 'textarea' : 'input'}><button class="button assistant-next" type="submit">Continue</button>`;
-  }
-  assistantForm.innerHTML = `${control}<div class="assistant-nav">${assistantStep > 0 ? '<button type="button" class="assistant-back">← Back / Edit</button>' : ''}<button type="button" class="assistant-restart">Restart</button></div>`;
-  if (step.type === 'text' && step.type !== 'textarea') assistantForm.querySelector('#assistant-input').value = assistantData[step.key] || '';
-  assistantForm.querySelectorAll('.assistant-choice').forEach(button => button.addEventListener('click', () => {
-    assistantData[step.key] = button.dataset.value;
-    assistantStep += 1;
-    renderAssistant();
-  }));
-  assistantForm.querySelector('.assistant-back')?.addEventListener('click', () => { assistantStep -= 1; renderAssistant(); });
-  assistantForm.querySelector('.assistant-restart').addEventListener('click', restartAssistant);
-  assistantForm.querySelector('#assistant-input')?.focus();
-}
-
-function restartAssistant() {
-  assistantStep = 0;
-  assistantData = {};
-  renderAssistant();
-}
-
-assistantForm.addEventListener('submit', async event => {
-  event.preventDefault();
-  const step = steps[assistantStep];
-  if (step.type !== 'review') {
-    const input = assistantForm.querySelector('#assistant-input');
-    const value = input.value.trim();
-    if (!value && !step.optional) { input.setCustomValidity('Please complete this step.'); input.reportValidity(); return; }
-    if (step.inputType === 'email' && !input.validity.valid) { input.reportValidity(); return; }
-    assistantData[step.key] = value;
-    assistantStep += 1;
-    renderAssistant();
-    return;
-  }
-  const send = assistantForm.querySelector('.assistant-send');
-  const status = assistantForm.querySelector('.assistant-status');
-  send.disabled = true;
-  send.textContent = 'Sending…';
-  const payload = new FormData();
-  payload.set('lead_source', 'Cimo Project Assistant');
-  Object.entries(assistantData).forEach(([key, value]) => payload.set(key, value));
-  payload.set('project_summary', Object.entries(assistantData).map(([key, value]) => `${key}: ${value}`).join('\n'));
-  try {
-    await submitLead(payload);
-    assistantMessage.innerHTML = '<h3>Your project details have been sent to Cimo.</h3><p>Justin will review the request and follow up using your preferred contact method.</p>';
-    assistantForm.innerHTML = '<button class="button assistant-finish" type="button">Done</button><button class="assistant-restart success-restart" type="button">Start another request</button>';
-    assistantForm.querySelector('.assistant-finish').addEventListener('click', () => assistantDialog.close());
-    assistantForm.querySelector('.success-restart').addEventListener('click', restartAssistant);
-  } catch (error) {
-    status.textContent = error.message === 'setup' ? 'Online requests are being connected. Please call 585-305-4365 for a free estimate.' : 'We couldn’t send this request. Please try again or call 585-305-4365.';
-    send.disabled = false;
-    send.textContent = 'Send Project Request';
-  }
-});
-
-document.querySelectorAll('.assistant-open').forEach(button => button.addEventListener('click', () => { openDialog(assistantDialog); renderAssistant(); }));
-assistantDialog.querySelector('.assistant-close').addEventListener('click', () => assistantDialog.close());
-assistantDialog.addEventListener('click', event => { if (event.target === assistantDialog) assistantDialog.close(); });
-
-if (!window.matchMedia('(prefers-reduced-motion: reduce)').matches) {
-  const observer = new IntersectionObserver(entries => entries.forEach(entry => {
-    if (entry.isIntersecting) { entry.target.classList.add('visible'); observer.unobserve(entry.target); }
-  }), { threshold: 0.1 });
-  document.querySelectorAll('.reveal').forEach(item => observer.observe(item));
-} else document.querySelectorAll('.reveal').forEach(item => item.classList.add('visible'));
-document.querySelector('#year').textContent = new Date().getFullYear();
+const dialog=$('#estimate-dialog'),form=$('#estimate-form'),message=$('.estimate-message'),progress=$('.progress-track i'),progressText=$('.progress-text');let step=0,data={},preview=null;
+const steps=[['project_type','Is this for a home or small business?','choices',['Residential','Small Business']],['service','What kind of work do you need?','choices',['Interior Painting','Exterior Painting','Garage Painting','Surface Prep','Cleaning','Other']],['paint_area','What area needs work?','text'],['project_size','About how large is the project?','text'],['surface_condition','How would you describe the surface condition?','choices',['Good','Minor wear or damage','Needs significant preparation','Not sure']],['prep_concerns','Any visible preparation concerns?','text'],['timing','When would you like the work completed?','choices',['As soon as practical','Within one month','Within 1–3 months','Planning ahead']],['name','What is your name?','text'],['phone','Best phone number?','tel'],['email','Best email address?','email'],['preferred_contact','How should Cimo respond?','choices',['Phone Call','Email']],['additional_details','Anything else Cimo should know?','textarea']];
+function openEstimate(){step=0;renderStep();dialog.showModal()}function navButtons(){return `<div class="assistant-nav">${step?'<button type="button" data-back>Back / Edit</button>':''}<button type="button" data-restart>Restart</button></div>`}function renderStep(){const total=steps.length+1;progress.style.width=`${step/total*100}%`;progressText.textContent=`Step ${Math.min(step+1,total)} of ${total}`;if(step===steps.length)return review();const [key,prompt,type,opts]=steps[step];message.innerHTML=`<p>${prompt}</p>`;let control=type==='choices'?`<div class="assistant-choices">${opts.map(o=>`<button type="button" class="assistant-choice${data[key]===o?' selected':''}" data-value="${o}">${o}</button>`).join('')}</div>`:type==='textarea'?`<textarea name="answer" maxlength="1000" rows="4" required>${data[key]||''}</textarea>`:`<input name="answer" type="${type}" maxlength="${key==='email'?254:150}" value="${data[key]||''}" required>`;form.innerHTML=control+(type==='choices'?'':'<button class="button assistant-next">Continue</button>')+navButtons();$$('[data-value]',form).forEach(b=>b.onclick=()=>{data[key]=b.dataset.value;step++;renderStep()});form.onsubmit=e=>{e.preventDefault();if(!form.reportValidity())return;data[key]=form.answer.value.trim();step++;renderStep()};wireNav()}
+function wireNav(){$('[data-back]',form)?.addEventListener('click',()=>{step--;renderStep()});$('[data-restart]',form).onclick=()=>{data={};preview=null;step=0;renderStep()}}
+function review(){message.innerHTML='<h3>Review your estimate request</h3>';form.innerHTML=`<dl class="assistant-summary">${steps.map(([k])=>`<div><dt>${k.replaceAll('_',' ')}</dt><dd>${escapeHtml(data[k]||'—')}</dd></div>`).join('')}${preview?'<div><dt>Color Studio</dt><dd>Color Studio preview attached<br>'+escapeHtml(preview.color)+(preview.surface?'<br>'+escapeHtml(preview.surface):'')+'<br><button type="button" id="remove-preview">Remove Preview</button></dd></div>':''}</dl><label class="honeypot">Leave empty<input name="website" autocomplete="off" tabindex="-1"></label><button class="button assistant-send">Send Estimate Request</button><p class="assistant-status" role="status"></p>${navButtons()}`;wireNav();$('#remove-preview')?.addEventListener('click',()=>{preview=null;review()});form.onsubmit=submit}
+function escapeHtml(s){return String(s).replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]))}
+async function submit(e){e.preventDefault();const status=$('.assistant-status'),button=$('.assistant-send');button.disabled=true;button.textContent='Sending…';const fd=new FormData();Object.entries({...data,lead_source:preview?'Cimo Color Studio':'Website Estimate',selected_color:preview?.color||'',surface_description:preview?.surface||''}).forEach(([k,v])=>fd.append(k,v));fd.append('website',form.website.value);if(preview)fd.append('preview',preview.blob,'cimo-color-preview.jpg');const url=window.CIMO_CONFIG?.contactApiUrl;if(!/^https?:\/\//.test(url||'')){status.textContent='Online requests are being connected. Please call 585-305-4365.';button.disabled=false;return}try{const r=await fetch(url.replace(/\/$/,'')+'/api/contact',{method:'POST',body:fd});if(!r.ok)throw Error();message.innerHTML='<h3>Thank you. Your request was sent.</h3><p>Cimo will follow up using your preferred method.</p>';form.innerHTML='<button type="button" class="button" id="done">Done</button>';$('#done').onclick=()=>dialog.close()}catch{status.textContent='We couldn’t send your request. Please try again or call 585-305-4365.';button.disabled=false;button.textContent='Send Estimate Request'}}
+$$('.estimate-open').forEach(b=>b.addEventListener('click',openEstimate));$('.estimate-close').onclick=()=>dialog.close();$('#use-preview').onclick=async()=>{const b=$('#use-preview');b.disabled=true;b.textContent='Preparing preview…';preview=await Studio.attach();b.textContent='Use This With My Free Estimate';b.disabled=false;openEstimate()};

@@ -1,4 +1,2 @@
-// Public lead-delivery configuration. Replace this one value after creating the Formspree form.
-window.CIMO_CONFIG = Object.freeze({
-  formspreeEndpoint: 'https://formspree.io/f/REPLACE_WITH_FORM_ID'
-});
+// Public API URL only. Never place credentials or the private lead destination here.
+window.CIMO_CONFIG = Object.freeze({ contactApiUrl: 'CONTACT_API_URL' });
