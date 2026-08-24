@@ -1,33 +1,14 @@
-# Cimo Home Refreshments — Painting-First Website
+# Cimo Home Refreshments
 
-A responsive static website positioning Cimo as a professional Rochester-area painting business. It preserves the premium concept design while making painting, right-sized projects, preparation, personal service, phone calls, and free estimate requests the primary experience.
+A responsive, painting-first GitHub Pages website for Cimo's Rochester-area residential and small-business painting service. It includes a local Canvas-based Color Studio and one guided free-estimate experience.
 
-## How it works
+## Architecture
 
-The site uses semantic HTML, modern CSS, and vanilla JavaScript for the mobile menu, before/after comparison, reveal effects, estimate dialog, and deterministic Project Assistant. Both lead experiences post to Formspree through the single endpoint in `config.js`. There is no build step, framework, database, or application server.
+- `index.html`, `styles.css`, `script.js`: framework-free GitHub Pages frontend and local-only Color Studio
+- `config.js`: public Render API base URL (no secrets)
+- `server/`: Express, Nodemailer and optional Twilio lead delivery API
+- `LEAD_API_SETUP.md`: administrator deployment guide; Justin has no setup responsibility
 
-## Files
+The photo visualizer resizes the selected image in memory, creates a contiguous color-similarity mask, supports brush/erase refinement, and preserves luminance while recoloring. It does not use storage or external image/AI services. Only an explicitly selected original/preview composite is submitted.
 
-- `index.html` — page structure and editable copy
-- `styles.css` — visual system and responsive layouts
-- `script.js` — lightweight interactions
-- `config.js` — the single public Formspree endpoint setting
-- `assets/favicon.svg` — concept favicon
-- `CONTACT_SETUP.md` — internal, beginner-friendly Formspree setup guide (not deployed)
-- `.github/workflows/pages.yml` — automatic GitHub Pages deployment
-
-## Editing the concept
-
-Change messaging directly in `index.html`. Demo images use clearly visible Unsplash URLs in `index.html` and `styles.css`; replace those URLs with optimized Cimo project files placed in `assets/images/`. Keep paths relative (for example, `assets/images/project.webp`) so the site continues to work under a GitHub Pages repository subpath.
-
-Every push to `main` triggers the Pages workflow. GitHub Pages must use **GitHub Actions** as its source in repository settings. The workflow stages only the client files required by the public site, keeping internal Markdown documentation out of the deployed artifact.
-
-## Future conversational AI architecture
-
-V1 is intentionally deterministic: it cannot invent pricing or service commitments and needs no paid API. If conversational AI is added later, use this boundary:
-
-```text
-GitHub Pages frontend → secure Cloudflare Worker → OpenAI API
-```
-
-Store the OpenAI API key **only** as a Cloudflare Worker secret. Never place an API key in browser JavaScript, repository files, GitHub Pages configuration, or client-visible requests. The Worker should enforce allowed origins, validate and minimize input, apply rate limits, keep the same business guardrails, and return only the information the frontend needs.
+See `LEAD_API_SETUP.md` for deployment. Run backend tests with `cd server && npm install && npm test`.
