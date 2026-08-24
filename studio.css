@@ -51,7 +51,7 @@
 .studio-advanced summary:after{content:'+';float:right;color:#f2b2ac;font-size:1rem;line-height:1}
 .studio-advanced[open] summary:after{content:'−'}
 .studio-advanced-body{padding:0 0 .35rem}
-.range-ends{display:flex;justify-content:space-between;font-size:.58rem;color:#77726c;margin-top:-.55rem}
+.range-ends{display:flex;justify-content:space-between;font-size:.58rem;color:#9a948c;margin-top:-.55rem}
 .selection-toggle{display:flex!important;align-items:center;gap:.55rem}
 .selection-toggle input{width:auto;min-height:auto;margin:0}
 .active-color{display:flex;align-items:center;gap:.75rem;border:1px solid rgba(255,255,255,.16);padding:.65rem;margin-bottom:.9rem}
@@ -80,8 +80,4 @@
 .manifesto ul{list-style:none;padding:0;margin:0;display:grid;grid-template-columns:1fr 1fr}
 .manifesto li{border-top:1px solid var(--line);padding:1.2rem 0;font-weight:600}
 .manifesto li:nth-child(odd){margin-right:2rem}
-.steps{list-style:none;padding:0;display:grid;grid-template-columns:repeat(5,1fr);border-top:1px solid var(--line);margin:0}
-.steps li{padding:2rem 1.5rem 1rem 0;border-right:1px solid var(--line);min-height:230px}
-.steps li+li{padding-left:1.5rem}
-.steps li:last-child{border:0}
-.steps span,.secondary-list span{font-family:Georgia,serif;font-style:italic;color:var(--red);font-size:1.2rem}
+.secondary-list span{font-family:Georgia,serif;font-style:italic;color:var(--red);font-size:1.2rem}
