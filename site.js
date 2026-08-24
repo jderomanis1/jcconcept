@@ -81,6 +81,12 @@ if (studioStatus && 'MutationObserver' in window) {
   new MutationObserver(normalizeStudioLanguage).observe(studioStatus, { childList: true, characterData: true, subtree: true });
 }
 
+const desktopPalette = $('#palette');
+if (desktopPalette) {
+  desktopPalette.tabIndex = 0;
+  desktopPalette.setAttribute('aria-label', 'Paint colors. Swipe or scroll horizontally, then Tab through individual colors.');
+}
+
 const navLinks = $$('#site-nav a[href^="#"]');
 const observedSections = navLinks.map((link) => document.querySelector(link.getAttribute('href'))).filter(Boolean);
 if ('IntersectionObserver' in window && navLinks.length && observedSections.length) {
