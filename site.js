@@ -25,6 +25,33 @@ if (!window.matchMedia('(prefers-reduced-motion: reduce)').matches) {
   $$('.reveal').forEach((el) => el.classList.add('visible'));
 }
 
+const serviceImages = [
+  {
+    id: 'photo-1652829069629-959f8927f608',
+    alt: 'Professional painter working on an interior wall'
+  },
+  {
+    id: 'photo-1742900280864-bcc27353ceba',
+    alt: 'Professional painter coating the exterior of a house from a ladder'
+  },
+  {
+    id: 'photo-1768839725085-829e6ac7ac26',
+    alt: 'Wall repair and surface preparation with putty knives'
+  },
+  {
+    id: 'photo-1652829069834-2c05031199c5',
+    alt: 'Professional painter preparing a roller at an active job site'
+  }
+];
+$$('.service-card img').forEach((img, index) => {
+  const replacement = serviceImages[index];
+  if (!replacement) return;
+  const base = `https://images.unsplash.com/${replacement.id}`;
+  img.src = `${base}?auto=format&fit=crop&w=1000&q=82`;
+  img.srcset = `${base}?auto=format&fit=crop&w=640&q=80 640w, ${base}?auto=format&fit=crop&w=1000&q=82 1000w, ${base}?auto=format&fit=crop&w=1400&q=84 1400w`;
+  img.alt = replacement.alt;
+});
+
 $$('img').forEach((img) => img.addEventListener('error', () => img.classList.add('image-unavailable')));
 
 const palette = [
