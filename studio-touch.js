@@ -4,7 +4,25 @@
   const canvas = document.querySelector('#studio-canvas');
   const wrap = document.querySelector('.canvas-wrap');
   const status = document.querySelector('#studio-status');
-  if (!canvas || !wrap || !window.Studio) return;
+  if (!canvas || !wrap || typeof Studio === 'undefined') return;
+
+  if (typeof window.createImageBitmap !== 'function') {
+    window.createImageBitmap = async (file) => {
+      const url = URL.createObjectURL(file);
+      try {
+        const image = new Image();
+        image.decoding = 'async';
+        await new Promise((resolve, reject) => {
+          image.onload = resolve;
+          image.onerror = reject;
+          image.src = url;
+        });
+        return image;
+      } finally {
+        URL.revokeObjectURL(url);
+      }
+    };
+  }
 
   const originalLoad = Studio.load.bind(Studio);
   Studio.load = async (file) => {
@@ -54,27 +72,21 @@
     x = Math.max(-maxX, Math.min(maxX, x));
     y = Math.max(-maxY, Math.min(maxY, y));
   }
-
   function applyView() {
     clampView();
     canvas.style.transform = `translate(${x}px, ${y}px) scale(${scale})`;
   }
-
   function resetView() {
     scale = 1; x = 0; y = 0; pointers.clear(); gestureStart = null; applyView();
     if (status && !wrap.hidden) status.textContent = 'View reset. Choose Select, Add or Remove to continue.';
   }
-
   function setMode(next) {
     mode = next;
     canvas.style.touchAction = next === 'smart' ? 'pan-y' : 'none';
     if (next === 'pan' && status) status.textContent = 'Move mode: drag to pan. Pinch with two fingers to zoom.';
   }
 
-  document.querySelectorAll('[data-mobile-tool], .tool').forEach((button) => {
-    button.addEventListener('click', () => setMode(button.dataset.mobileTool || button.dataset.tool || 'smart'));
-  });
-
+  document.querySelectorAll('[data-mobile-tool], .tool').forEach((button) => button.addEventListener('click', () => setMode(button.dataset.mobileTool || button.dataset.tool || 'smart')));
   document.querySelector('[data-mobile-action="undo"]')?.addEventListener('click', () => document.querySelector('#undo')?.click());
   document.querySelector('[data-mobile-action="reset"]')?.addEventListener('click', () => document.querySelector('#reset')?.click());
   document.querySelector('[data-mobile-action="fit"]')?.addEventListener('click', resetView);
@@ -99,27 +111,20 @@
     const pts = [...pointers.values()];
     if (pts.length < 2) return null;
     const [a, b] = pts;
-    return {
-      distance: Math.hypot(b.x - a.x, b.y - a.y),
-      midX: (a.x + b.x) / 2,
-      midY: (a.y + b.y) / 2
-    };
+    return { distance: Math.hypot(b.x - a.x, b.y - a.y), midX: (a.x + b.x) / 2, midY: (a.y + b.y) / 2 };
   }
 
   canvas.addEventListener('pointerdown', (event) => {
     if (mode !== 'pan' || event.pointerType !== 'touch') return;
-    event.preventDefault();
-    event.stopImmediatePropagation();
+    event.preventDefault(); event.stopImmediatePropagation();
     canvas.setPointerCapture?.(event.pointerId);
     pointers.set(event.pointerId, { x: event.clientX, y: event.clientY });
     const m = metrics();
     gestureStart = m ? { ...m, scale, x, y } : { oneX: event.clientX, oneY: event.clientY, x, y, scale };
   }, true);
-
   canvas.addEventListener('pointermove', (event) => {
     if (mode !== 'pan' || event.pointerType !== 'touch' || !pointers.has(event.pointerId)) return;
-    event.preventDefault();
-    event.stopImmediatePropagation();
+    event.preventDefault(); event.stopImmediatePropagation();
     pointers.set(event.pointerId, { x: event.clientX, y: event.clientY });
     const m = metrics();
     if (m && gestureStart?.distance) {
@@ -132,17 +137,14 @@
     }
     applyView();
   }, true);
-
   function endPointer(event) {
     if (mode !== 'pan' || event.pointerType !== 'touch') return;
-    event.preventDefault();
-    event.stopImmediatePropagation();
+    event.preventDefault(); event.stopImmediatePropagation();
     pointers.delete(event.pointerId);
     const remaining = [...pointers.values()][0];
     gestureStart = remaining ? { oneX: remaining.x, oneY: remaining.y, x, y, scale } : null;
   }
   canvas.addEventListener('pointerup', endPointer, true);
   canvas.addEventListener('pointercancel', endPointer, true);
-
   setMode('smart');
 })();
