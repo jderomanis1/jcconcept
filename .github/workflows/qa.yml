@@ -110,6 +110,7 @@ jobs:
               assert.ok(targets.every(t => t.h >= 44 && t.w >= 44), `${name} mobile CTA target under 44px`);
               await page.evaluate(() => scrollTo(0, 0));
               await page.locator('.menu-toggle').click();
+              await page.waitForTimeout(50);
               assert.ok(await page.locator('body').evaluate(el => el.classList.contains('menu-open')), `${name} menu did not lock scroll`);
               assert.ok(await page.locator('#site-nav').evaluate(el => el.contains(document.activeElement)), `${name} menu did not move focus inside`);
               await page.keyboard.press('Escape');
@@ -117,6 +118,7 @@ jobs:
               assert.ok(await page.locator('.menu-toggle').evaluate(el => document.activeElement === el), `${name} focus not restored to menu toggle`);
 
               await page.locator('#color-studio').scrollIntoViewIfNeeded();
+              await page.locator('#mobile-studio-bar').evaluate(el => { el.hidden = false; });
               const studioTargets = await page.locator('[data-mobile-tool],[data-mobile-action]').evaluateAll(els => els.map(el => el.getBoundingClientRect().height));
               assert.ok(studioTargets.every(h => h >= 44), `${name} Color Studio target under 44px`);
               assert.equal(await page.locator('#photo-input').getAttribute('accept'), 'image/*', `${name} phone photo input not image/*`);
@@ -125,7 +127,8 @@ jobs:
             const unlabeledIconButtons = await page.evaluate(() => [...document.querySelectorAll('button')].filter(b => !b.textContent.trim() && !b.getAttribute('aria-label')).length);
             assert.equal(unlabeledIconButtons, 0, `${name} has unlabeled icon-only button`);
 
-            await page.locator('.estimate-open').first().click();
+            if (width <= 430) await page.locator('.mobile-conversion .estimate-open').click();
+            else await page.locator('.site-header > .estimate-open').click();
             await page.locator('#estimate-form input[name="name"]').fill('QA Test');
             await page.locator('#estimate-form input[name="phone"]').fill('5855551234');
             await page.locator('#estimate-form select[name="service"]').selectOption({ label: 'Interior Painting' });
