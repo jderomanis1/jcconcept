@@ -1,12 +1,272 @@
-<!doctype html><html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>Cimo Home Refreshments | Rochester Painting & Color Studio</title><meta name="description" content="Professional interior and exterior painting in Rochester, NY. Explore colors locally with Cimo Color Studio and request a free estimate."><meta name="theme-color" content="#181715"><link rel="icon" href="assets/favicon.svg"><link rel="stylesheet" href="styles.css"><script src="config.js" defer></script><script src="script.js" defer></script></head><body>
-<a class="skip-link" href="#main">Skip to content</a><header class="site-header" id="home"><a class="brand" href="#home" aria-label="Cimo home"><span class="brand-mark">C</span><span class="brand-type"><strong>CIMO</strong><small>HOME REFRESHMENTS</small></span></a><button class="menu-toggle" aria-expanded="false" aria-controls="site-nav"><span></span><span></span><span></span><span class="sr-only">Open menu</span></button><nav id="site-nav" aria-label="Primary"><a href="#services">Painting</a><a href="#color-studio">Cimo Color Studio</a><a href="#standard">The Cimo Standard</a><a href="#why-cimo">Why Cimo</a><a href="#contact">Contact</a><a class="nav-call" href="tel:5853054365">Call 585-305-4365</a><button class="link-button estimate-open mobile-estimate">Get a Free Estimate</button></nav><a class="header-call" href="tel:5853054365">Call 585-305-4365</a><button class="button button-small estimate-open">Get a Free Estimate</button></header>
-<main id="main"><section class="hero"><div class="hero-image" role="img" aria-label="Painter applying paint to an interior wall"></div><div class="hero-shade"></div><div class="hero-content reveal"><p class="eyebrow light">Rochester Area · Residential + Small Business</p><h1>Professional Painting.<br><em>Detailed by Design.</em></h1><p>Four years of professional experience for interiors, exteriors and garages—with careful preparation, personal service and small-to-medium projects welcome.</p><div class="hero-actions"><button class="button estimate-open">Get a Free Estimate ↗</button><a class="text-link light" href="#color-studio">Explore Color Studio ↓</a></div></div></section>
-<section class="trust" aria-label="Painting highlights"><div><strong>4 Years<br>Experience</strong></div><div><strong>Interior +<br>Exterior</strong></div><div><strong>Residential +<br>Small Business</strong></div><div><strong>Professional<br>Prep</strong></div><div><strong>Detailed<br>Finishes</strong></div><div><strong>Free<br>Estimates</strong></div></section>
-<section class="section services" id="services"><div class="section-heading reveal"><div><p class="eyebrow">Painting comes first</p><h2>The right painter for<br>the project you have.</h2></div><p>Cimo welcomes targeted refreshes, several-room projects, garages, exteriors and appropriate small-business spaces—with professional care at every scale.</p></div><div class="service-grid"><article class="service-card"><img src="https://images.unsplash.com/photo-1562259949-e8e7689d7828?auto=format&fit=crop&w=1000&q=80" alt="Painter applying paint"><div><span>01 / INTERIOR</span><h3>Interior Painting</h3><p>Walls, ceilings, trim and interior spaces, from targeted refreshes through larger projects.</p></div></article><article class="service-card"><img src="https://images.unsplash.com/photo-1595814433015-e6f5ce69614e?auto=format&fit=crop&w=1000&q=80" alt="Painted residential exterior"><div><span>02 / EXTERIOR</span><h3>Exterior & Garage</h3><p>Proper preparation with attention to durability and finish.</p></div></article><article class="service-card"><img src="https://images.unsplash.com/photo-1560435650-7470a0b0eaa0?auto=format&fit=crop&w=1000&q=80" alt="Painting tools beside a wall"><div><span>03 / PREPARATION</span><h3>Surface Prep</h3><p>Sanding, appropriate minor repair and priming when needed.</p></div></article><article class="service-card"><img src="https://images.unsplash.com/photo-1497366754035-f200968a6e72?auto=format&fit=crop&w=1000&q=80" alt="Bright small office"><div><span>04 / SMALL BUSINESS</span><h3>Small-Business Painting</h3><p>Professional painting for offices, shops and similar smaller spaces.</p></div></article></div></section>
-<section class="studio-section" id="color-studio"><div class="studio-intro"><p class="eyebrow light">Cimo Color Studio</p><h2>See It Before<br>You Paint It.</h2><p>Upload one room, wall, exterior area, garage or business space and explore a new color before requesting a free estimate.</p><strong>✓ Your photo stays on this device until you choose to include it with an estimate request.</strong></div><div class="studio-workspace"><div class="canvas-panel"><label class="upload-zone" id="upload-zone"><input id="photo-input" type="file" accept="image/jpeg,image/png,image/webp"><b>Upload Photo</b><span>Drag and drop or click to browse · JPEG, PNG or WebP · 10 MB maximum</span></label><div class="canvas-wrap" hidden><canvas id="studio-canvas" aria-label="Your Color Studio image"></canvas><div class="canvas-empty">Select Smart Select, then click the surface you want to change.</div></div><p id="studio-status" role="status" aria-live="polite"></p><div class="compare-controls" hidden><button id="show-original">Original</button><button id="show-preview" aria-pressed="true">Preview</button><label>Before / after <input id="compare-range" type="range" min="0" max="100" value="100"></label></div></div><aside class="studio-controls"><section><h3>1. Select Surface</h3><div class="tool-row"><button class="tool active" data-tool="smart">Smart Select</button><button class="tool" data-tool="brush">Brush</button><button class="tool" data-tool="erase">Erase</button></div><label>Selection Tolerance <output id="tolerance-value">35</output><input id="tolerance" type="range" min="5" max="90" value="35"></label><label>Brush size <output id="brush-value">30</output><input id="brush-size" type="range" min="5" max="100" value="30"></label><p>Paint over the area you want to change. Smart Select is a starting point; use Brush and Erase to refine it.</p></section><section><h3>2. Pick a Color</h3><div id="palette" class="palette" aria-label="Generic paint color palette"></div><label class="custom-color">Custom Color <input id="custom-color" type="color" value="#b76b55"></label></section><section><h3>3. Preview</h3><label>Surface description (optional)<input id="surface-notes" maxlength="150" placeholder="Example: living room accent wall"></label><div class="studio-actions"><button id="undo" disabled>Undo</button><button id="reset" disabled>Reset</button></div><button class="button studio-estimate" id="use-preview" disabled>Use This With My Free Estimate</button><p class="accuracy">On-screen color is an approximation. Lighting, screen settings, surface texture and actual paint can affect the finished appearance.</p></section></aside></div></section>
-<section class="manifesto" id="why-cimo"><div><p class="eyebrow light">Why Cimo</p></div><div class="manifesto-copy"><h2>Professional results.<br>More personal service.</h2><p>Right-sized painting, handled with care.</p><ul><li>Locally owned and operated</li><li>4 years professional experience</li><li>Small-to-medium projects welcome</li><li>Residential + small-business work</li><li>Professional surface preparation</li><li>Direct, reliable communication</li><li>Clean work areas and cleanup</li><li>Quality without large-contractor overhead</li></ul></div></section>
-<section class="section process" id="standard"><div class="section-heading"><div><p class="eyebrow">The Cimo Standard</p><h2>A thoughtful path to a professional finish.</h2></div></div><ol class="steps five"><li><span>01</span><h3>Clear Scope</h3><p>Understand the work and goal.</p></li><li><span>02</span><h3>Proper Prep</h3><p>Sand, repair and prime as needed.</p></li><li><span>03</span><h3>Careful Finish</h3><p>Attention to edges and coverage.</p></li><li><span>04</span><h3>Respect the Space</h3><p>Clean work areas and cleanup.</p></li><li><span>05</span><h3>Final Review</h3><p>Confirm the agreed scope.</p></li></ol></section>
-<section class="secondary-services"><div><p class="eyebrow">More ways to refresh</p><h2>Cleaning, when your project calls for it.</h2></div><div class="secondary-list"><article><span>01</span><h3>Deep Cleaning</h3><p>A detailed reset beyond routine upkeep.</p></article><article><span>02</span><h3>Move-In / Move-Out</h3><p>Prepare a space for its next chapter.</p></article></div></section>
-<section class="closing" id="contact"><p class="eyebrow light">Rochester-area painting</p><h2>Get a Free Estimate</h2><p class="closing-copy">Homeowners and small businesses are welcome. Let's get a few details.</p><button class="button button-light estimate-open">Get a Free Estimate ↗</button><a class="closing-phone" href="tel:5853054365">Call 585-305-4365</a></section></main>
-<footer><div class="footer-brand"><a class="brand" href="#home"><span class="brand-mark">C</span><span class="brand-type"><strong>CIMO</strong><small>HOME REFRESHMENTS</small></span></a><p>Professional painting for the Rochester, New York area.</p></div><div><strong>Painting</strong><a href="#services">Interior</a><a href="#services">Exterior</a><a href="#services">Garage</a><a href="#services">Small Business</a></div><div><strong>Explore</strong><a href="#color-studio">Cimo Color Studio</a><a href="#standard">The Cimo Standard</a><a href="#why-cimo">Why Cimo</a></div><div><strong>Contact</strong><button class="link-button estimate-open">Get a Free Estimate</button><a href="tel:5853054365">585-305-4365</a></div><div class="footer-meta"><small>© <span id="year"></span> Cimo Home Refreshments</small></div></footer>
-<dialog id="estimate-dialog" class="estimate-dialog" aria-labelledby="estimate-title"><div class="assistant-head"><div><span>GET A FREE ESTIMATE</span><h2 id="estimate-title">Let's get a few details for your free estimate.</h2></div><button class="estimate-close" aria-label="Close">×</button><div class="progress-track"><i></i></div><p class="progress-text" aria-live="polite"></p></div><div class="assistant-body"><div class="estimate-message" aria-live="polite"></div><form id="estimate-form"></form><p class="assistant-guardrail">Prefer to talk? <a href="tel:5853054365">Call 585-305-4365</a>.</p></div></dialog></body></html>
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width,initial-scale=1">
+  <title>Cimo Home Refreshments | Rochester Painting & Color Studio</title>
+  <meta name="description" content="Professional interior and exterior painting in Rochester, NY. Explore colors with Cimo Color Studio and request a free estimate.">
+  <meta name="theme-color" content="#181715">
+  <link rel="canonical" href="https://jderomanis1.github.io/jcconcept/">
+  <meta property="og:type" content="website">
+  <meta property="og:title" content="Cimo Home Refreshments | Rochester Painting & Color Studio">
+  <meta property="og:description" content="Professional painting for Rochester-area homes and small businesses, plus Cimo Color Studio to preview a new color before you paint.">
+  <meta property="og:url" content="https://jderomanis1.github.io/jcconcept/">
+  <meta property="og:site_name" content="Cimo Home Refreshments">
+  <meta name="twitter:card" content="summary">
+  <meta name="twitter:title" content="Cimo Home Refreshments | Rochester Painting & Color Studio">
+  <meta name="twitter:description" content="Professional painting for Rochester-area homes and small businesses, plus Cimo Color Studio.">
+  <link rel="icon" href="assets/favicon.svg">
+  <link rel="preload" href="assets/fonts/dm-sans-latin-wght-normal.woff2" as="font" type="font/woff2" crossorigin>
+  <link rel="stylesheet" href="styles.css">
+  <script type="application/ld+json">
+  {
+    "@context": "https://schema.org",
+    "@type": "LocalBusiness",
+    "name": "Cimo Home Refreshments",
+    "url": "https://jderomanis1.github.io/jcconcept/",
+    "telephone": "+1-585-305-4365",
+    "description": "Professional painting for residential and small-business spaces in the Rochester, New York area.",
+    "areaServed": {"@type": "City", "name": "Rochester", "addressRegion": "NY"},
+    "hasOfferCatalog": {
+      "@type": "OfferCatalog",
+      "name": "Painting Services",
+      "itemListElement": [
+        {"@type": "Offer", "itemOffered": {"@type": "Service", "name": "Interior Painting"}},
+        {"@type": "Offer", "itemOffered": {"@type": "Service", "name": "Exterior Painting"}},
+        {"@type": "Offer", "itemOffered": {"@type": "Service", "name": "Garage Painting"}},
+        {"@type": "Offer", "itemOffered": {"@type": "Service", "name": "Small-Business Painting"}}
+      ]
+    }
+  }
+  </script>
+  <script src="config.js" defer></script>
+  <script src="script.js" defer></script>
+</head>
+<body>
+<a class="skip-link" href="#main">Skip to content</a>
+<header class="site-header" id="home">
+  <a class="brand" href="#home" aria-label="Cimo home">
+    <span class="brand-mark">C</span>
+    <span class="brand-type"><strong>CIMO</strong><small>HOME REFRESHMENTS</small></span>
+  </a>
+  <button class="menu-toggle" aria-expanded="false" aria-controls="site-nav"><span></span><span></span><span></span><span class="sr-only">Open menu</span></button>
+  <nav id="site-nav" aria-label="Primary">
+    <a href="#services">Painting</a>
+    <a href="#color-studio">Cimo Color Studio</a>
+    <a href="#standard">The Cimo Standard</a>
+    <a href="#why-cimo">Why Cimo</a>
+    <a href="#contact">Contact</a>
+    <a class="nav-call" href="tel:5853054365">Call 585-305-4365</a>
+    <button class="link-button estimate-open mobile-estimate">Get a Free Estimate</button>
+  </nav>
+  <a class="header-call" href="tel:5853054365">Call 585-305-4365</a>
+  <button class="button button-small estimate-open">Get a Free Estimate</button>
+</header>
+
+<main id="main">
+  <section class="hero">
+    <div class="hero-image" role="img" aria-label="Painter applying paint to an interior wall"></div>
+    <div class="hero-shade"></div>
+    <div class="hero-content reveal">
+      <p class="eyebrow light">Rochester Area · Residential + Small Business</p>
+      <h1>Professional Painting.<br><em>Detailed by Design.</em></h1>
+      <p>Four years of professional experience for interiors, exteriors and garages, with careful preparation, personal service and small-to-medium projects welcome.</p>
+      <div class="hero-actions">
+        <button class="button estimate-open">Get a Free Estimate ↗</button>
+        <a class="text-link light" href="#color-studio">Explore Color Studio ↓</a>
+      </div>
+    </div>
+  </section>
+
+  <section class="trust" aria-label="Painting highlights">
+    <div><strong>4 Years<br>Experience</strong></div>
+    <div><strong>Interior +<br>Exterior</strong></div>
+    <div><strong>Residential +<br>Small Business</strong></div>
+    <div><strong>Professional<br>Prep</strong></div>
+    <div><strong>Detailed<br>Finishes</strong></div>
+    <div><strong>Free<br>Estimates</strong></div>
+  </section>
+
+  <section class="section services" id="services">
+    <div class="section-heading reveal">
+      <div><p class="eyebrow">Painting comes first</p><h2>The right painter for<br>the project you have.</h2></div>
+      <p>Cimo welcomes targeted refreshes, several-room projects, garages, exteriors and appropriate small-business spaces, with professional care at every scale.</p>
+    </div>
+    <div class="service-grid">
+      <article class="service-card">
+        <img src="https://images.unsplash.com/photo-1562259949-e8e7689d7828?auto=format&fit=crop&w=1000&q=80" srcset="https://images.unsplash.com/photo-1562259949-e8e7689d7828?auto=format&fit=crop&w=640&q=78 640w, https://images.unsplash.com/photo-1562259949-e8e7689d7828?auto=format&fit=crop&w=1000&q=80 1000w, https://images.unsplash.com/photo-1562259949-e8e7689d7828?auto=format&fit=crop&w=1400&q=82 1400w" sizes="(max-width:680px) 100vw, 50vw" width="1000" height="750" loading="lazy" alt="Painter applying paint">
+        <div><span>01 / INTERIOR</span><h3>Interior Painting</h3><p>Walls, ceilings, trim and interior spaces, from targeted refreshes through larger projects.</p></div>
+      </article>
+      <article class="service-card">
+        <img src="https://images.unsplash.com/photo-1595814433015-e6f5ce69614e?auto=format&fit=crop&w=1000&q=80" srcset="https://images.unsplash.com/photo-1595814433015-e6f5ce69614e?auto=format&fit=crop&w=640&q=78 640w, https://images.unsplash.com/photo-1595814433015-e6f5ce69614e?auto=format&fit=crop&w=1000&q=80 1000w, https://images.unsplash.com/photo-1595814433015-e6f5ce69614e?auto=format&fit=crop&w=1400&q=82 1400w" sizes="(max-width:680px) 100vw, 50vw" width="1000" height="750" loading="lazy" alt="Painted residential exterior">
+        <div><span>02 / EXTERIOR</span><h3>Exterior &amp; Garage</h3><p>Proper preparation with attention to durability and finish.</p></div>
+      </article>
+      <article class="service-card">
+        <img src="https://images.unsplash.com/photo-1560435650-7470a0b0eaa0?auto=format&fit=crop&w=1000&q=80" srcset="https://images.unsplash.com/photo-1560435650-7470a0b0eaa0?auto=format&fit=crop&w=640&q=78 640w, https://images.unsplash.com/photo-1560435650-7470a0b0eaa0?auto=format&fit=crop&w=1000&q=80 1000w, https://images.unsplash.com/photo-1560435650-7470a0b0eaa0?auto=format&fit=crop&w=1400&q=82 1400w" sizes="(max-width:680px) 100vw, 50vw" width="1000" height="750" loading="lazy" alt="Painting tools beside a wall">
+        <div><span>03 / PREPARATION</span><h3>Surface Prep</h3><p>Sanding, appropriate minor repair and priming when needed.</p></div>
+      </article>
+      <article class="service-card">
+        <img src="https://images.unsplash.com/photo-1497366754035-f200968a6e72?auto=format&fit=crop&w=1000&q=80" srcset="https://images.unsplash.com/photo-1497366754035-f200968a6e72?auto=format&fit=crop&w=640&q=78 640w, https://images.unsplash.com/photo-1497366754035-f200968a6e72?auto=format&fit=crop&w=1000&q=80 1000w, https://images.unsplash.com/photo-1497366754035-f200968a6e72?auto=format&fit=crop&w=1400&q=82 1400w" sizes="(max-width:680px) 100vw, 50vw" width="1000" height="750" loading="lazy" alt="Bright small office">
+        <div><span>04 / SMALL BUSINESS</span><h3>Small-Business Painting</h3><p>Professional painting for offices, shops and similar smaller spaces.</p></div>
+      </article>
+    </div>
+  </section>
+
+  <section class="studio-section" id="color-studio">
+    <div class="studio-intro">
+      <p class="eyebrow light">Cimo Color Studio</p>
+      <h2>See It Before<br>You Paint It.</h2>
+      <p>Upload one room, wall, exterior area, garage or business space and explore a new color before requesting a free estimate.</p>
+      <strong>✓ Your photo stays on this device until you choose to include it with an estimate request.</strong>
+    </div>
+    <div class="studio-workspace">
+      <div class="canvas-panel">
+        <label class="upload-zone" id="upload-zone">
+          <input id="photo-input" type="file" accept="image/jpeg,image/png,image/webp">
+          <b>Upload Photo</b>
+          <span>Drag and drop or click to browse · JPEG, PNG or WebP · 10 MB maximum</span>
+        </label>
+        <div class="canvas-wrap" hidden>
+          <canvas id="studio-canvas" aria-label="Your Color Studio image"></canvas>
+          <div class="canvas-empty">Tap a wall to select the surface you want to change.</div>
+        </div>
+        <p id="studio-status" role="status" aria-live="polite">Upload a photo to start.</p>
+        <div class="compare-controls" hidden>
+          <div class="view-toggle" role="group" aria-label="View original or preview">
+            <button id="show-original" type="button" aria-pressed="false">Original</button>
+            <button id="show-preview" type="button" aria-pressed="true">Preview</button>
+          </div>
+          <label>Before / after <input id="compare-range" type="range" min="0" max="100" value="100" aria-label="Before and after comparison"></label>
+        </div>
+      </div>
+      <fieldset class="studio-controls" id="studio-controls" disabled>
+        <legend class="sr-only">Color Studio controls</legend>
+        <p class="studio-disabled-hint">Upload a photo to start.</p>
+        <section>
+          <h3>1. Select Surface</h3>
+          <div class="tool-row" role="group" aria-label="Selection tools">
+            <button type="button" class="tool active" data-tool="smart" aria-pressed="true">Tap a Wall</button>
+            <button type="button" class="tool" data-tool="brush" aria-pressed="false">Add</button>
+            <button type="button" class="tool" data-tool="erase" aria-pressed="false">Remove</button>
+          </div>
+          <label>How much to grab <output id="tolerance-value">35</output><input id="tolerance" type="range" min="5" max="90" value="35" aria-label="How much of the surface to grab"></label>
+          <div class="range-ends" aria-hidden="true"><span>Less</span><span>More</span></div>
+          <label>Brush size <output id="brush-value">30</output><input id="brush-size" type="range" min="5" max="100" value="30"></label>
+          <label class="selection-toggle"><input id="show-selection" type="checkbox"> Show selection</label>
+          <p>Tap a wall for a fast starting selection. Use Add and Remove to refine it. Shift-click adds another area; Alt/Option-click removes one.</p>
+        </section>
+        <section>
+          <h3>2. Pick a Color</h3>
+          <div id="active-color" class="active-color" aria-live="polite"><span class="active-color-swatch"></span><span><strong>Terracotta</strong><small>#A85E49</small></span></div>
+          <div id="palette" class="palette" aria-label="Generic paint color palette"></div>
+          <p class="palette-tip">Tip: drag a color straight onto the wall.</p>
+          <label class="custom-color">Custom Color <input id="custom-color" type="color" value="#a85e49"></label>
+          <p class="palette-honesty">Representative colors. Cimo can match the final choice to your preferred paint brand.</p>
+        </section>
+        <section>
+          <h3>3. Preview</h3>
+          <label>Surface description (optional)<input id="surface-notes" maxlength="150" placeholder="Example: living room accent wall"></label>
+          <div class="studio-actions"><button type="button" id="undo" disabled>Undo</button><button type="button" id="reset" disabled>Reset</button></div>
+          <button type="button" class="button studio-estimate" id="use-preview" disabled>Use This With My Free Estimate</button>
+          <p class="accuracy">On-screen color is an approximation. Lighting, screen settings, surface texture and actual paint can affect the finished appearance.</p>
+        </section>
+      </fieldset>
+      <div class="mobile-studio-bar" id="mobile-studio-bar" hidden>
+        <div class="mobile-tools" role="group" aria-label="Mobile selection tools">
+          <button type="button" data-mobile-tool="smart" aria-pressed="true">Tap</button>
+          <button type="button" data-mobile-tool="brush" aria-pressed="false">Add</button>
+          <button type="button" data-mobile-tool="erase" aria-pressed="false">Remove</button>
+        </div>
+        <div id="mobile-palette" class="mobile-palette" aria-label="Paint colors"></div>
+        <div class="mobile-active-color" aria-hidden="true"><span></span></div>
+      </div>
+    </div>
+  </section>
+
+  <section class="manifesto" id="why-cimo">
+    <div><p class="eyebrow">Why Cimo</p></div>
+    <div class="manifesto-copy">
+      <h2>Professional results.<br>More personal service.</h2>
+      <p>Right-sized painting, handled with care.</p>
+      <ul>
+        <li>Locally owned and operated</li><li>4 years professional experience</li><li>Small-to-medium projects welcome</li><li>Residential + small-business work</li><li>Professional surface preparation</li><li>Direct, reliable communication</li><li>Clean work areas and cleanup</li><li>Quality without large-contractor overhead</li>
+      </ul>
+    </div>
+  </section>
+
+  <section class="section process" id="standard">
+    <div class="section-heading"><div><p class="eyebrow">The Cimo Standard</p><h2>A thoughtful path to a professional finish.</h2></div></div>
+    <ol class="steps five"><li><span>01</span><h3>Clear Scope</h3><p>Understand the work and goal.</p></li><li><span>02</span><h3>Proper Prep</h3><p>Sand, repair and prime as needed.</p></li><li><span>03</span><h3>Careful Finish</h3><p>Attention to edges and coverage.</p></li><li><span>04</span><h3>Respect the Space</h3><p>Clean work areas and cleanup.</p></li><li><span>05</span><h3>Final Review</h3><p>Confirm the agreed scope.</p></li></ol>
+  </section>
+
+  <section class="secondary-services">
+    <div><p class="eyebrow">More ways to refresh</p><h2>Cleaning, when your project calls for it.</h2></div>
+    <div class="secondary-list"><article><span>01</span><h3>Deep Cleaning</h3><p>A detailed reset beyond routine upkeep.</p></article><article><span>02</span><h3>Move-In / Move-Out</h3><p>Prepare a space for its next chapter.</p></article></div>
+  </section>
+
+  <section class="closing" id="contact">
+    <p class="eyebrow light">Rochester-area painting</p>
+    <h2>Get a Free Estimate</h2>
+    <p class="closing-copy">Homeowners and small businesses are welcome. Tell us the basics and Cimo will follow up.</p>
+    <button class="button button-light estimate-open">Get a Free Estimate ↗</button>
+    <a class="closing-phone" href="tel:5853054365">Call 585-305-4365</a>
+  </section>
+</main>
+
+<footer>
+  <div class="footer-brand"><a class="brand" href="#home"><span class="brand-mark">C</span><span class="brand-type"><strong>CIMO</strong><small>HOME REFRESHMENTS</small></span></a><p>Professional painting for the Rochester, New York area.</p></div>
+  <div><strong>Painting</strong><a href="#services">Interior</a><a href="#services">Exterior</a><a href="#services">Garage</a><a href="#services">Small Business</a></div>
+  <div><strong>Explore</strong><a href="#color-studio">Cimo Color Studio</a><a href="#standard">The Cimo Standard</a><a href="#why-cimo">Why Cimo</a></div>
+  <div><strong>Contact</strong><button class="link-button estimate-open">Get a Free Estimate</button><a href="tel:5853054365">585-305-4365</a></div>
+  <div class="footer-meta"><small>© <span id="year"></span> Cimo Home Refreshments</small></div>
+</footer>
+
+<div class="mobile-conversion" aria-label="Quick contact"><a href="tel:5853054365">Call</a><button type="button" class="estimate-open">Free Estimate</button></div>
+
+<dialog id="estimate-dialog" class="estimate-dialog" aria-labelledby="estimate-title">
+  <div class="assistant-head">
+    <div><span>GET A FREE ESTIMATE</span><h2 id="estimate-title">Tell Cimo the basics.</h2><p>Quick to send. No long questionnaire.</p></div>
+    <button type="button" class="estimate-close" aria-label="Close">×</button>
+  </div>
+  <div class="assistant-body">
+    <div class="estimate-config-fallback" hidden>
+      <h3>Call Cimo for a Free Estimate</h3>
+      <a class="fallback-phone" href="tel:5853054365">585-305-4365</a>
+      <p>Online requests are not connected yet. Call Cimo directly and we’ll get you taken care of.</p>
+    </div>
+    <div class="estimate-form-panel">
+      <div class="preview-attachment-note" id="preview-attachment-note" hidden><strong>Color Studio preview ready</strong><span>Your before/after preview will be attached to this request.</span></div>
+      <form id="estimate-form" novalidate>
+        <div class="field-row">
+          <label>Name <input name="name" autocomplete="name" maxlength="100" required></label>
+          <label>Phone <input name="phone" type="tel" autocomplete="tel" maxlength="30" pattern="[+()0-9 .-]{7,30}" aria-describedby="phone-hint" required><small id="phone-hint">Example: 585-555-1234</small></label>
+        </div>
+        <label>Project type
+          <select name="service" required>
+            <option value="">Choose one</option>
+            <option>Interior Painting</option>
+            <option>Exterior Painting</option>
+            <option>Garage Painting</option>
+            <option>Small Business Painting</option>
+            <option>Cleaning</option>
+            <option>Other</option>
+          </select>
+        </label>
+        <label>Email <span class="optional">Optional</span><input name="email" type="email" autocomplete="email" maxlength="254"></label>
+        <label>Tell us about your project <span class="optional">Optional</span><textarea name="description" maxlength="1000" rows="4" placeholder="Room, surfaces, goals, timing, or anything else that would help."></textarea></label>
+        <label class="honeypot" aria-hidden="true">Leave empty<input name="website" autocomplete="off" tabindex="-1"></label>
+        <button class="button assistant-send" type="submit">Request My Free Estimate</button>
+        <p class="form-expectation">We’ll follow up as soon as possible.</p>
+        <p class="assistant-status" role="status" aria-live="polite"></p>
+      </form>
+      <p class="assistant-guardrail">Prefer to talk? <a href="tel:5853054365">Call 585-305-4365</a>.</p>
+    </div>
+    <div class="estimate-success" hidden>
+      <h3>Thank you. Your estimate request was sent to Cimo.</h3>
+      <p>Cimo will follow up using the information you provided.</p>
+      <button type="button" class="button" id="estimate-done">Done</button>
+    </div>
+  </div>
+</dialog>
+</body>
+</html>
