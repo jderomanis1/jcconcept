@@ -8,6 +8,12 @@
   .studio-controls section:last-of-type{border-right:0}
   .studio-disabled-hint{grid-column:1/-1}
   .palette-group-swatches{grid-template-columns:1fr}
+  .mobile-studio-bar{position:sticky;bottom:0;z-index:30;background:#11110f;border:1px solid rgba(255,255,255,.2);padding:.5rem;display:grid;grid-template-columns:auto minmax(0,1fr) 28px;gap:.5rem;align-items:center;box-shadow:0 -8px 24px rgba(0,0,0,.28)}
+  .mobile-tools{display:flex;gap:.3rem}.mobile-tools button{padding:.5rem .55rem}
+  .mobile-palette{display:flex;overflow-x:auto;gap:.4rem;padding:.15rem;scrollbar-width:thin}
+  .mobile-swatch{width:30px;height:30px;border-radius:50%;border:2px solid transparent;flex:0 0 auto;padding:0}
+  .mobile-swatch.selected{border-color:#fff;box-shadow:0 0 0 1px #111}
+  .mobile-active-color span{display:block;width:24px;height:24px;border-radius:50%;border:1px solid rgba(255,255,255,.4)}
   .steps{grid-template-columns:repeat(3,1fr)}
   .steps li:nth-child(3){border-right:0}.steps li:nth-child(-n+3){border-bottom:1px solid var(--line)}
   footer{grid-template-columns:2fr 1fr 1fr}
@@ -33,12 +39,6 @@
   .studio-controls{display:block}
   .studio-controls section{border-right:0;border-bottom:1px solid rgba(255,255,255,.12)}
   .palette-group-swatches{grid-template-columns:repeat(3,1fr)}
-  .mobile-studio-bar{position:sticky;bottom:0;z-index:30;background:#11110f;border:1px solid rgba(255,255,255,.2);padding:.5rem;display:grid;grid-template-columns:auto minmax(0,1fr) 28px;gap:.5rem;align-items:center;box-shadow:0 -8px 24px rgba(0,0,0,.28)}
-  .mobile-tools{display:flex;gap:.3rem}.mobile-tools button{padding:.5rem .55rem}
-  .mobile-palette{display:flex;overflow-x:auto;gap:.4rem;padding:.15rem;scrollbar-width:thin}
-  .mobile-swatch{width:30px;height:30px;border-radius:50%;border:2px solid transparent;flex:0 0 auto;padding:0}
-  .mobile-swatch.selected{border-color:#fff;box-shadow:0 0 0 1px #111}
-  .mobile-active-color span{display:block;width:24px;height:24px;border-radius:50%;border:1px solid rgba(255,255,255,.4)}
   .manifesto{grid-template-columns:1fr;gap:2rem}
   .secondary-services{grid-template-columns:1fr;gap:2rem}
 }
