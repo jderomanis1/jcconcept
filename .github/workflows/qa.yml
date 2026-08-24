@@ -17,12 +17,15 @@ jobs:
           node-version: 20
       - name: Frontend syntax and policy checks
         run: |
-          node --check script.js
+          for file in script.js site.js studio-core.js studio-ui.js estimate.js; do node --check "$file"; done
           python3 - <<'PY'
           from html.parser import HTMLParser
           HTMLParser().feed(open('index.html', encoding='utf-8').read())
           PY
-          ! grep -RniE 'fonts\.googleapis|formspree|basin|emailjs|twilio|SMS_' index.html styles.css script.js server LEAD_API_SETUP.md
+          ! grep -RniE 'fonts\.googleapis|formspree|basin|emailjs|twilio|SMS_' index.html *.css *.js server LEAD_API_SETUP.md
+          grep -q "assets/fonts/dm-sans-latin-wght-normal.woff2" index.html
+          grep -q "globalCompositeOperation = 'color'" studio-core.js
+          grep -q "LEAD_EMAIL_TO=jcimo47@gmail.com" server/.env.example
       - name: Verify vendored font package paths
         run: |
           npm install --prefix /tmp/cimo-fonts --no-save --ignore-scripts \
