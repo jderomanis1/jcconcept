@@ -24,6 +24,7 @@ function buildPalette() {
     button.dataset.color = color;
     button.draggable = true;
     button.setAttribute('aria-label', `${name}, ${color}`);
+    button.title = `${name} · ${color.toUpperCase()}`;
     const dot = document.createElement('span');
     dot.className = 'swatch-dot';
     dot.style.background = color;
@@ -39,6 +40,7 @@ function buildPalette() {
     mobileButton.className = 'mobile-swatch';
     mobileButton.dataset.color = color;
     mobileButton.setAttribute('aria-label', name);
+    mobileButton.title = name;
     mobileButton.style.background = color;
     mobileButton.addEventListener('click', () => Studio.setColor(name, color));
     mobile.append(mobileButton);
@@ -51,19 +53,19 @@ function buildQuickStart() {
   const quick = document.createElement('div');
   quick.className = 'studio-quickstart';
   quick.setAttribute('aria-label', 'Color Studio quick start');
-  quick.innerHTML = '<span><b>1</b> Try a sample or upload a photo</span><span><b>2</b> Tap the wall once</span><span><b>3</b> Pick a color and compare</span>';
+  quick.innerHTML = '<span><b>1</b> Try a sample or upload a photo</span><span><b>2</b> Tap the area you want to change</span><span><b>3</b> Pick a color and compare</span>';
   workspace.before(quick);
 }
 
 function simplifySurfaceControls() {
   const sections = $$('#studio-controls > section');
   if (sections.length < 3) return;
-  sections[0].querySelector('h3').textContent = '1. Tap the Surface';
+  sections[0].querySelector('h3').textContent = '1. Tap the Area';
   sections[1].querySelector('h3').textContent = '2. Pick a Color';
   sections[2].querySelector('h3').textContent = '3. Compare & Request';
 
   const explanation = sections[0].querySelector('p:last-of-type');
-  explanation.textContent = 'Start with Tap a Wall. If the edge is imperfect, use Add or Remove. Most photos need nothing else.';
+  explanation.textContent = 'Start with Tap Area. If the edge is imperfect, use Add or Remove. Most photos need nothing else.';
 
   const details = document.createElement('details');
   details.className = 'studio-advanced';
@@ -102,7 +104,7 @@ function buildDemoRoom() {
       const file = new File([blob], 'cimo-sample-room.jpg', { type: blob.type || 'image/jpeg' });
       await Studio.load(file);
       row.hidden = true;
-      $('#studio-status').textContent = 'Sample ready. Tap the large wall once, then pick a color.';
+      $('#studio-status').textContent = 'Sample ready. Tap the area you want to change, then pick a color.';
     } catch {
       $('#studio-status').textContent = 'The sample room could not load. Upload your own photo to continue.';
     } finally {
