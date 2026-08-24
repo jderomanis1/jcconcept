@@ -1,6 +1,8 @@
 const dialog = $('#estimate-dialog');
 const estimateForm = $('#estimate-form');
 const fallback = $('.estimate-config-fallback');
+const fallbackHeading = fallback.querySelector('h3');
+const fallbackCopy = fallback.querySelector('p');
 const formPanel = $('.estimate-form-panel');
 const successPanel = $('.estimate-success');
 const successHeading = successPanel.querySelector('h3');
@@ -20,6 +22,12 @@ function apiBaseUrl() {
     return parsed.protocol === 'https:' ? parsed.href.replace(/\/$/, '') : '';
   } catch { return ''; }
 }
+function showConfigFallback() {
+  fallbackHeading.textContent = 'Call or text 585-305-4365';
+  fallbackCopy.textContent = 'Online requests are unavailable right now. Call or text Cimo directly for your free estimate.';
+  fallback.hidden = false;
+  formPanel.hidden = true;
+}
 function resetEstimatePanels() {
   fallback.hidden = true;
   formPanel.hidden = false;
@@ -33,7 +41,7 @@ function resetEstimatePanels() {
 }
 function openEstimate() {
   resetEstimatePanels();
-  if (!apiBaseUrl()) { fallback.hidden = false; formPanel.hidden = true; }
+  if (!apiBaseUrl()) showConfigFallback();
   dialog.showModal();
   requestAnimationFrame(() => {
     const focusTarget = fallback.hidden ? estimateForm.elements.name : $('.fallback-phone');
@@ -72,6 +80,7 @@ function buildSubmission(raw, includePreview) {
   body.append('_subject', 'New Cimo estimate request');
   body.append('_template', 'table');
   body.append('_captcha', 'false');
+  body.append('_honey', String(raw.get('website') || '').trim());
   if (includePreview && studioPreview?.blob) body.append('preview', studioPreview.blob, 'cimo-color-preview.jpg');
   return body;
 }
@@ -82,8 +91,11 @@ async function postEstimate(endpoint, raw, includePreview) {
     headers: { Accept: 'application/json' },
     body: buildSubmission(raw, includePreview)
   });
-  if (!response.ok) throw new Error(`FormSubmit returned ${response.status}`);
-  return response;
+  const result = await response.json().catch(() => null);
+  if (!response.ok || result?.success === false || result?.success === 'false') {
+    throw new Error(`FormSubmit returned ${response.status}`);
+  }
+  return result;
 }
 
 estimateForm.addEventListener('submit', async (event) => {
@@ -91,7 +103,7 @@ estimateForm.addEventListener('submit', async (event) => {
   if (submitting) return;
   if (!estimateForm.reportValidity()) return;
   const endpoint = apiBaseUrl();
-  if (!endpoint) { fallback.hidden = false; formPanel.hidden = true; return; }
+  if (!endpoint) { showConfigFallback(); return; }
   submitting = true;
   const button = $('.assistant-send');
   button.disabled = true;
