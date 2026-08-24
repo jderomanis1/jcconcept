@@ -31,7 +31,7 @@ jobs:
       - name: Stage public website files
         run: |
           mkdir -p _site/assets/fonts
-          cp index.html styles.css script.js config.js _site/
+          cp index.html config.js styles.css base.css studio.css site.css responsive.css script.js site.js studio-core.js studio-ui.js estimate.js _site/
           cp -R assets/. _site/assets/
           cp /tmp/cimo-fonts/node_modules/@fontsource-variable/manrope/files/manrope-latin-wght-normal.woff2 _site/assets/fonts/
           cp /tmp/cimo-fonts/node_modules/@fontsource-variable/dm-sans/files/dm-sans-latin-wght-normal.woff2 _site/assets/fonts/
