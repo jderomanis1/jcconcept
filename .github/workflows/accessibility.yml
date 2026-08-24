@@ -1,0 +1,47 @@
+name: Cimo Accessibility
+
+on:
+  pull_request:
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  axe:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 20
+      - name: Install axe browser runtime
+        run: |
+          npm init -y >/dev/null 2>&1
+          npm install --no-save playwright @axe-core/playwright >/dev/null 2>&1
+          npx playwright install --with-deps chromium >/dev/null
+      - name: Check mobile and desktop accessibility
+        run: |
+          python3 -m http.server 4173 >/tmp/cimo-http.log 2>&1 &
+          cat > axe-check.mjs <<'JS'
+          import { chromium } from 'playwright';
+          import AxeBuilder from '@axe-core/playwright';
+
+          const browser = await chromium.launch({ headless: true });
+          let failed = false;
+          for (const [label, width, height] of [['mobile',390,844],['desktop',1440,1000]]) {
+            const page = await browser.newPage({ viewport: { width, height } });
+            await page.goto('http://127.0.0.1:4173/', { waitUntil: 'networkidle' });
+            const results = await new AxeBuilder({ page }).withTags(['wcag2a','wcag2aa','wcag21a','wcag21aa']).analyze();
+            console.log(`${label.toUpperCase()} axe violations: ${results.violations.length}`);
+            for (const violation of results.violations) {
+              console.log(`- ${violation.id} [${violation.impact}]: ${violation.help}`);
+              for (const node of violation.nodes.slice(0,8)) console.log(`  ${node.target.join(' ')} :: ${node.failureSummary || ''}`);
+            }
+            if (results.violations.some(v => ['critical','serious'].includes(v.impact))) failed = true;
+            await page.close();
+          }
+          await browser.close();
+          if (failed) process.exit(1);
+          JS
+          node axe-check.mjs
