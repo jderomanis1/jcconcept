@@ -28,6 +28,14 @@ function showConfigFallback() {
   fallback.hidden = false;
   formPanel.hidden = true;
 }
+function addWhatHappensNext() {
+  if (formPanel.querySelector('.estimate-next-steps')) return;
+  const note = document.createElement('div');
+  note.className = 'estimate-next-steps';
+  note.innerHTML = '<strong>What happens next</strong><span>Send your details → Cimo follows up to talk through the project → arrange the estimate.</span>';
+  estimateForm.before(note);
+}
+addWhatHappensNext();
 function resetEstimatePanels() {
   fallback.hidden = true;
   formPanel.hidden = false;
@@ -71,11 +79,12 @@ $('#use-preview').addEventListener('click', async () => {
 
 function submissionFields(raw) {
   const website = String(raw.get('website') || '').trim();
-  return {
+  const email = String(raw.get('email') || '').trim();
+  const fields = {
     name: String(raw.get('name') || '').trim(),
     phone: String(raw.get('phone') || '').trim(),
     service: String(raw.get('service') || '').trim(),
-    email: String(raw.get('email') || '').trim(),
+    email,
     description: String(raw.get('description') || '').trim(),
     lead_source: studioPreview ? 'Cimo Color Studio' : 'Website Estimate',
     selected_color: studioPreview?.color || '',
@@ -86,6 +95,8 @@ function submissionFields(raw) {
     _honey: website,
     _url: window.location.href
   };
+  if (email) fields._replyto = email;
+  return fields;
 }
 
 function buildMultipartSubmission(raw) {
