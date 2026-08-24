@@ -26,15 +26,29 @@ jobs:
           test ! -f render.yaml
           ! grep -RniE 'nodemailer|GMAIL_APP_PASSWORD|/api/contact|twilio|SMS_' . --exclude-dir=.git
           grep -q "https://formsubmit.co/ajax/jcimo47@gmail.com" config.js
+          grep -q "'Content-Type': 'application/json'" estimate.js
+          grep -q "JSON.stringify(submissionFields(raw))" estimate.js
+          grep -q "buildMultipartSubmission" estimate.js
+          grep -q "postEstimate(endpoint, raw, false)" estimate.js
           grep -q "_subject" estimate.js
           grep -q "_template" estimate.js
           grep -q "_captcha" estimate.js
           grep -q "_honey" estimate.js
-          grep -q "postEstimate(endpoint, raw, false)" estimate.js
+          grep -q "_url" estimate.js
+          grep -q "_replyto" estimate.js
           grep -q "selected_color" estimate.js
           grep -q "surface_description" estimate.js
+          grep -q "estimate-next-steps" estimate.js
           grep -q "fonts.googleapis.com/css2" script.js
           grep -q "fonts.googleapis.com/css2" .github/workflows/pages.yml
           ! grep -q "@font-face" base.css
+          grep -q "photo-1652829069629-959f8927f608" site.js
+          grep -q "photo-1742900280864-bcc27353ceba" site.js
+          grep -q "photo-1768839725085-829e6ac7ac26" site.js
+          grep -q "photo-1652829069834-2c05031199c5" site.js
+          grep -q "Try a sample room" studio-ui.js
+          grep -q "Fine-tune selection" studio-ui.js
+          grep -q "studio-quickstart" studio-ui.js
+          grep -q "max-width:1100px" responsive.css
           grep -q "globalCompositeOperation = 'color'" studio-core.js
           grep -q "\\.canvas-empty.*hidden = hasMask\|\\$('.canvas-empty').hidden = hasMask" studio-core.js

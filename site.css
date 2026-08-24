@@ -29,6 +29,8 @@ footer .link-button{color:white}
 .assistant-head p{color:#aaa49c;font-size:.78rem;margin:0}
 .estimate-close{position:absolute;right:1rem;top:1rem;border:0;background:transparent;color:white;font-size:2rem;width:44px;height:44px}
 .assistant-body{padding:2rem 3rem}
+.estimate-next-steps{display:flex;flex-direction:column;gap:.2rem;background:#efe8df;border-left:3px solid var(--red);padding:.75rem .9rem;margin:0 0 1rem;font-size:.72rem;color:#6a645d}
+.estimate-next-steps strong{color:var(--ink);font-size:.7rem;text-transform:uppercase;letter-spacing:.08em}
 #estimate-form{padding:0}
 #estimate-form label{display:block;font-size:.72rem;font-weight:750;margin-bottom:1rem}
 #estimate-form input,#estimate-form textarea,#estimate-form select{width:100%;border:1px solid #c9c1b7;background:white;padding:.75rem;margin-top:.4rem;min-height:46px;color:var(--ink)}
