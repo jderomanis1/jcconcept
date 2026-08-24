@@ -62,11 +62,11 @@ p{margin:0;max-width:var(--copy)}
 .button-small{font-size:.8rem;padding:.7rem 1rem;white-space:nowrap}
 .link-button{padding:0;border:0;background:none;color:inherit;text-align:left}
 
-/* Hero */
-.hero{height:calc(100svh - var(--header));min-height:610px;max-height:860px;position:relative;color:#fff;display:flex;align-items:flex-end;overflow:hidden}
+/* Hero. Mobile intentionally uses the brand treatment until approved local Cimo photography replaces the stock asset. */
+.hero{height:calc(100svh - var(--header));min-height:610px;max-height:860px;position:relative;color:#fff;display:flex;align-items:flex-end;overflow:hidden;background:radial-gradient(circle at 82% 18%,rgba(168,55,45,.34),transparent 42%),linear-gradient(145deg,#25231f 0%,#181715 58%,#0f0e0d 100%)}
 .hero-img,.hero-shade{position:absolute;inset:0}
-.hero-img{object-position:62% center}
-.hero-shade{background:linear-gradient(180deg,rgba(10,9,8,.28) 0%,rgba(10,9,8,.58) 43%,rgba(10,9,8,.94) 88%)}
+.hero-img{display:none;object-position:62% center}
+.hero-shade{background:linear-gradient(180deg,rgba(10,9,8,.08) 0%,rgba(10,9,8,.28) 43%,rgba(10,9,8,.62) 88%)}
 .hero-content{position:relative;z-index:2;padding:0 var(--gutter) var(--sp-6);max-width:800px;display:grid;gap:var(--sp-4)}
 .hero h1{font-family:var(--font-display);font-size:var(--fs-h1);font-weight:600;letter-spacing:-.055em;line-height:.9;margin:0;color:#fff}
 .hero h1 em{font-family:Georgia,serif;font-weight:400}
@@ -91,6 +91,8 @@ p{margin:0;max-width:var(--copy)}
 .service-card span{width:max-content;background:var(--ink);color:var(--accent-light);font-size:var(--fs-caption);letter-spacing:.12em;text-transform:uppercase;padding:.35rem .5rem;border-radius:.2rem;font-weight:800}
 .service-card h3{font-family:var(--font-display);font-size:1.6rem;line-height:1.05;margin:0;color:#fff}
 .service-card p{font-size:.92rem;color:#fff;line-height:1.55;max-width:52ch}
+
+@media(min-width:681px){.hero-img{display:block}}
 
 @media(min-width:901px){
   :root{--header:84px;--section-y:7rem;--gutter:clamp(2rem,5vw,6rem);--fs-h2:clamp(3.25rem,5vw,5.25rem);--fs-h1:clamp(4.8rem,6.3vw,7rem)}
