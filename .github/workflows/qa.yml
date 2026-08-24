@@ -15,26 +15,26 @@ jobs:
       - uses: actions/setup-node@v4
         with:
           node-version: 20
-      - name: Frontend syntax and policy checks
+      - name: Static site checks
         run: |
           for file in script.js site.js studio-core.js studio-ui.js estimate.js; do node --check "$file"; done
           python3 - <<'PY'
           from html.parser import HTMLParser
           HTMLParser().feed(open('index.html', encoding='utf-8').read())
           PY
-          ! grep -RniE 'fonts\.googleapis|formspree|basin|emailjs|twilio|SMS_' index.html *.css *.js server LEAD_API_SETUP.md
-          grep -q "assets/fonts/dm-sans-latin-wght-normal.woff2" index.html
+          test ! -d server
+          test ! -f render.yaml
+          ! grep -RniE 'nodemailer|GMAIL_APP_PASSWORD|/api/contact|twilio|SMS_' . --exclude-dir=.git
+          grep -q "https://formsubmit.co/ajax/jcimo47@gmail.com" config.js
+          grep -q "_subject" estimate.js
+          grep -q "_template" estimate.js
+          grep -q "_captcha" estimate.js
+          grep -q "_honey" estimate.js
+          grep -q "postEstimate(endpoint, raw, false)" estimate.js
+          grep -q "selected_color" estimate.js
+          grep -q "surface_description" estimate.js
+          grep -q "fonts.googleapis.com/css2" script.js
+          grep -q "fonts.googleapis.com/css2" .github/workflows/pages.yml
+          ! grep -q "@font-face" base.css
           grep -q "globalCompositeOperation = 'color'" studio-core.js
-          grep -q "LEAD_EMAIL_TO=jcimo47@gmail.com" server/.env.example
-      - name: Verify vendored font package paths
-        run: |
-          npm install --prefix /tmp/cimo-fonts --no-save --ignore-scripts \
-            @fontsource-variable/manrope@5.3.0 \
-            @fontsource-variable/dm-sans@5.3.0
-          test -f /tmp/cimo-fonts/node_modules/@fontsource-variable/manrope/files/manrope-latin-wght-normal.woff2
-          test -f /tmp/cimo-fonts/node_modules/@fontsource-variable/dm-sans/files/dm-sans-latin-wght-normal.woff2
-      - name: Backend tests
-        working-directory: server
-        run: |
-          npm install --ignore-scripts
-          npm test
+          grep -q "\\.canvas-empty.*hidden = hasMask\|\\$('.canvas-empty').hidden = hasMask" studio-core.js

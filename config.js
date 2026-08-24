@@ -1,2 +1,2 @@
-// Public API URL only. Never place credentials or the private lead destination here.
-window.CIMO_CONFIG = Object.freeze({ contactApiUrl: 'CONTACT_API_URL' });
+// Public FormSubmit AJAX endpoint. No credentials belong in this file.
+window.CIMO_CONFIG = Object.freeze({ contactApiUrl: 'https://formsubmit.co/ajax/jcimo47@gmail.com' });
