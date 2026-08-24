@@ -1,0 +1,4 @@
+User-agent: *
+Allow: /
+
+Sitemap: https://jderomanis1.github.io/jcconcept/sitemap.xml
