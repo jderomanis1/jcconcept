@@ -25,20 +25,8 @@ jobs:
       - name: Stage public website files
         run: |
           mkdir -p _site
-          cp index.html config.js styles.css base.css studio.css site.css responsive.css script.js site.js studio-core.js studio-ui.js estimate.js _site/
+          cp index.html 404.html robots.txt sitemap.xml config.js styles.css base.css studio.css site.css responsive.css revamp.css script.js site.js studio-core.js studio-ui.js estimate.js _site/
           cp -R assets _site/assets
-      - name: Use Google Fonts in deployed head
-        run: |
-          python3 - <<'PY'
-          from pathlib import Path
-          path = Path('_site/index.html')
-          html = path.read_text(encoding='utf-8')
-          old = '  <link rel="preload" href="assets/fonts/dm-sans-latin-wght-normal.woff2" as="font" type="font/woff2" crossorigin>\n'
-          new = '''  <link rel="preconnect" href="https://fonts.googleapis.com">\n  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>\n  <link rel="stylesheet" data-cimo-google-fonts href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;500;600;700&family=Manrope:wght@400;500;600;700&display=swap">\n'''
-          if old not in html:
-              raise SystemExit('Expected font preload not found in index.html')
-          path.write_text(html.replace(old, new), encoding='utf-8')
-          PY
       - uses: actions/configure-pages@v5
       - uses: actions/upload-pages-artifact@v4
         with:
