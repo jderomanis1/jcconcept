@@ -1,5 +1,6 @@
 /* Mobile is the base design. These rules only adapt upward or protect narrow screens. */
 .mobile-tools{grid-template-columns:repeat(4,1fr)}
+.studio-controls[disabled] .palette{overflow-x:hidden}
 @media(max-width:680px){body{padding-bottom:calc(var(--mobile-cta) + env(safe-area-inset-bottom))}}
 @media(max-width:430px){
   :root{--gutter:1rem}
