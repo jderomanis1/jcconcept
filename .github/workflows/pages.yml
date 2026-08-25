@@ -25,7 +25,7 @@ jobs:
       - name: Stage public website files
         run: |
           mkdir -p _site
-          cp index.html 404.html robots.txt sitemap.xml config.js styles.css base.css studio.css site.css responsive.css revamp.css script.js site.js studio-core.js studio-ui.js estimate.js _site/
+          cp index.html 404.html robots.txt sitemap.xml config.js styles.css base.css studio.css site.css responsive.css revamp.css script.js site.js studio-core.js studio-ui.js studio-touch.js estimate.js _site/
           cp -R assets _site/assets
       - uses: actions/configure-pages@v5
       - uses: actions/upload-pages-artifact@v4

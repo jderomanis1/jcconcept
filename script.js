@@ -1,7 +1,7 @@
 'use strict';
 
 (async () => {
-  for (const src of ['site.js', 'studio-core.js', 'studio-ui.js', 'estimate.js']) {
+  for (const src of ['site.js', 'studio-core.js', 'studio-ui.js', 'studio-touch.js', 'estimate.js']) {
     await new Promise((resolve, reject) => {
       const script = document.createElement('script');
       script.src = src;
