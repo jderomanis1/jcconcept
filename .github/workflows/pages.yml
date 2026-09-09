@@ -1,32 +1,33 @@
 name: Deploy static site to Pages
-
 on:
   push:
     branches: [main]
   workflow_dispatch:
-
 permissions:
   contents: read
   pages: write
   id-token: write
-
 concurrency:
   group: pages
   cancel-in-progress: true
-
 jobs:
   deploy:
+    timeout-minutes: 15
     environment:
       name: github-pages
       url: ${{ steps.deployment.outputs.page_url }}
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
-      - name: Stage public website files
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+      - name: Verify image-engine invariants
+        run: node --test tests/core.test.cjs
+      - name: Stage public website and social card
         run: |
-          mkdir -p _site
-          cp index.html 404.html robots.txt sitemap.xml config.js styles.css base.css studio.css site.css responsive.css revamp.css script.js site.js studio-core.js studio-ui.js studio-touch.js estimate.js _site/
-          cp -R assets _site/assets
+          python3 -m pip install --disable-pip-version-check Pillow==11.3.0
+          python3 scripts/stage.py
       - uses: actions/configure-pages@v5
       - uses: actions/upload-pages-artifact@v4
         with:
@@ -34,3 +35,21 @@ jobs:
       - name: Deploy to GitHub Pages
         id: deployment
         uses: actions/deploy-pages@v4
+      - name: Confirm every deployed public file matches this release
+        run: python3 scripts/verify_live.py
+      - name: Install pinned live-browser checks
+        timeout-minutes: 5
+        run: |
+          npm install --no-save --package-lock=false --no-audit --no-fund --fetch-retries=1 --fetch-timeout=45000 playwright@1.55.0 axe-core@4.10.3
+          npx --no-install playwright install --with-deps chromium webkit
+      - name: Verify the live desktop and mobile customer journeys
+        timeout-minutes: 5
+        env:
+          SITE_URL: https://jderomanis1.github.io/jcconcept/
+        run: node tests/browser.mjs
+      - uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: cimo-live-qa-evidence
+          path: qa-artifacts/
+          retention-days: 30

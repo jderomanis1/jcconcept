@@ -1,5 +1,7 @@
 node_modules/
+_site/
+qa-artifacts/
+.DS_Store
 .env
 .env.*
 !.env.example
-*.log
