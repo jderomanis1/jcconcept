@@ -7,6 +7,7 @@ permissions:
 jobs:
   verify:
     runs-on: ubuntu-latest
+    timeout-minutes: 15
     steps:
       - uses: actions/checkout@v4
       - uses: actions/setup-node@v4
@@ -16,11 +17,15 @@ jobs:
         run: |
           for file in config.js site.js studio-core.js studio-ui.js; do node --check "$file"; done
           node --test tests/core.test.cjs
-      - name: Install pinned test-only dependencies
-        run: |
-          python3 -m pip install Pillow==11.3.0
-          npm install --no-save --package-lock=false playwright@1.55.0 axe-core@4.10.3
-          npx playwright install --with-deps chromium webkit
+      - name: Install image-build dependency
+        timeout-minutes: 2
+        run: python3 -m pip install --disable-pip-version-check Pillow==11.3.0
+      - name: Install pinned browser-test packages
+        timeout-minutes: 3
+        run: npm install --no-save --package-lock=false --no-audit --no-fund --fetch-retries=1 --fetch-timeout=45000 playwright@1.55.0 axe-core@4.10.3
+      - name: Install test browsers and operating-system dependencies
+        timeout-minutes: 5
+        run: npx --no-install playwright install --with-deps chromium webkit
       - name: Build the exact Pages directory
         run: python3 scripts/stage.py
       - name: Test desktop, mobile, WebKit, accessibility, uploads and export
