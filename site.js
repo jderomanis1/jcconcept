@@ -1,112 +1,83 @@
-'use strict';
-
-const $ = (selector, root = document) => root.querySelector(selector);
-const $$ = (selector, root = document) => [...root.querySelectorAll(selector)];
-
-const header = $('.site-header');
-const menuToggle = $('.menu-toggle');
-const menuText = menuToggle?.querySelector('.sr-only');
-const nav = $('#site-nav');
-let menuReturnFocus = null;
-
-function focusableMenuItems() {
-  return nav ? $$('a[href], button:not([disabled])', nav).filter((el) => !el.hidden) : [];
-}
-
-function setMenuState(open, { restoreFocus = false } = {}) {
-  menuToggle?.setAttribute('aria-expanded', String(open));
-  nav?.classList.toggle('open', open);
-  document.body.classList.toggle('menu-open', open);
-  if (menuText) menuText.textContent = open ? 'Close menu' : 'Open menu';
-  if (open) {
-    menuReturnFocus = document.activeElement;
-    requestAnimationFrame(() => focusableMenuItems()[0]?.focus());
-  } else if (restoreFocus) {
-    (menuReturnFocus || menuToggle)?.focus();
+(() => {
+  'use strict';
+  document.documentElement.classList.add('js');
+  const $ = s => document.querySelector(s), $$ = s => [...document.querySelectorAll(s)];
+  const config = window.CIMO_CONFIG;
+  const menu = $('#site-nav'), toggle = $('.menu-toggle');
+  const background = [$('#main'),$('footer'),$('.mobile-conversion')];
+  function closeMenu(restore = false) {
+    menu.classList.remove('open'); toggle.setAttribute('aria-expanded','false');
+    document.body.classList.remove('menu-open'); background.forEach(el=>{if(el)el.inert=false;});
+    if(restore)toggle.focus();
   }
-}
-
-menuToggle?.addEventListener('click', () => {
-  const open = menuToggle.getAttribute('aria-expanded') === 'true';
-  setMenuState(!open, { restoreFocus: open });
-});
-
-$$('#site-nav a, #site-nav button').forEach((item) => item.addEventListener('click', () => setMenuState(false)));
-
-document.addEventListener('keydown', (event) => {
-  if (!nav?.classList.contains('open')) return;
-  if (event.key === 'Escape') {
-    event.preventDefault();
-    setMenuState(false, { restoreFocus: true });
-    return;
-  }
-  if (event.key !== 'Tab') return;
-  const items = focusableMenuItems();
-  if (!items.length) return;
-  const first = items[0];
-  const last = items.at(-1);
-  if (event.shiftKey && document.activeElement === first) {
-    event.preventDefault();
-    last.focus();
-  } else if (!event.shiftKey && document.activeElement === last) {
-    event.preventDefault();
-    first.focus();
-  }
-});
-
-const updateScrolledHeader = () => header?.classList.toggle('scrolled', window.scrollY > 8);
-updateScrolledHeader();
-window.addEventListener('scroll', updateScrolledHeader, { passive: true });
-
-const year = $('#year');
-if (year) year.textContent = new Date().getFullYear();
-
-if (!window.matchMedia('(prefers-reduced-motion: reduce)').matches) {
-  const reveal = new IntersectionObserver((entries) => {
-    entries.forEach((entry) => entry.isIntersecting && entry.target.classList.add('visible'));
-  }, { threshold: 0.08 });
-  $$('.reveal').forEach((el) => reveal.observe(el));
-} else {
-  $$('.reveal').forEach((el) => el.classList.add('visible'));
-}
-
-$$('img').forEach((img) => img.addEventListener('error', () => img.classList.add('image-unavailable')));
-
-const studioStatus = $('#studio-status');
-if (studioStatus && 'MutationObserver' in window) {
-  const normalizeStudioLanguage = () => {
-    if (/\bwall\b/i.test(studioStatus.textContent)) studioStatus.textContent = studioStatus.textContent.replace(/\bwall\b/gi, 'area');
-  };
-  normalizeStudioLanguage();
-  new MutationObserver(normalizeStudioLanguage).observe(studioStatus, { childList: true, characterData: true, subtree: true });
-}
-
-const desktopPalette = $('#palette');
-if (desktopPalette) {
-  desktopPalette.tabIndex = 0;
-  desktopPalette.setAttribute('aria-label', 'Paint colors. Swipe or scroll horizontally, then Tab through individual colors.');
-}
-
-const navLinks = $$('#site-nav a[href^="#"]');
-const observedSections = navLinks.map((link) => document.querySelector(link.getAttribute('href'))).filter(Boolean);
-if ('IntersectionObserver' in window && navLinks.length && observedSections.length) {
-  const activeNav = new IntersectionObserver((entries) => {
-    const visible = entries.filter((entry) => entry.isIntersecting).sort((a, b) => b.intersectionRatio - a.intersectionRatio)[0];
-    if (!visible) return;
-    navLinks.forEach((link) => {
-      const active = link.getAttribute('href') === `#${visible.target.id}`;
-      if (active) link.setAttribute('aria-current', 'true'); else link.removeAttribute('aria-current');
+  if(menu && toggle) {
+    toggle.hidden=false;
+    toggle.addEventListener('click',()=>{
+      if(menu.classList.contains('open')) {closeMenu(true);return;}
+      menu.classList.add('open');toggle.setAttribute('aria-expanded','true');document.body.classList.add('menu-open');
+      background.forEach(el=>{if(el)el.inert=true;}); menu.querySelector('a').focus({preventScroll:true});
     });
-  }, { rootMargin: '-28% 0px -58% 0px', threshold: [0, 0.1, 0.25, 0.5] });
-  observedSections.forEach((section) => activeNav.observe(section));
-}
-
-const palette = [
-  ['Warm Whites','Soft Ivory','#eee8dc'],['Warm Whites','Warm Linen','#ddd1bd'],['Warm Whites','Porcelain','#f3eee4'],
-  ['Cool Whites','Cloud White','#e7ebea'],['Cool Whites','Quiet Frost','#dce3e2'],['Cool Whites','Pale Mist','#d9dfdc'],
-  ['Neutrals','Stone','#aaa091'],['Neutrals','Mushroom','#918476'],['Neutrals','Pewter','#777773'],['Neutrals','Sand','#c3af91'],
-  ['Warm Earth','Terracotta','#a85e49'],['Warm Earth','Clay','#bd8068'],['Warm Earth','Canyon','#855142'],['Warm Earth','Ochre','#aa7b43'],
-  ['Greens','Sage','#89927a'],['Greens','Olive','#687052'],['Greens','Forest','#394c3d'],
-  ['Blues','Coastal Blue','#66899a'],['Blues','Slate Blue','#526b7a'],['Blues','Deep Navy','#263947'],
-  ['Deep Colors','Charcoal','#343534'],['Deep Colors','Brick','#853b32'],['Deep Colors','Plum','#59404f'],['Deep Colors','Ink','#252a30']
-];
+    menu.addEventListener('click',event=>{if(event.target.closest('a'))closeMenu();});
+    $('.site-header .brand').addEventListener('click',()=>closeMenu());
+    document.addEventListener('keydown',event=>{
+      if(!menu.classList.contains('open'))return;
+      if(event.key==='Escape'){event.preventDefault();closeMenu(true);}
+      if(event.key==='Tab') {
+        const items=[toggle,...menu.querySelectorAll('a[href]')],first=items[0],last=items.at(-1);
+        if(event.shiftKey&&document.activeElement===first){event.preventDefault();last.focus();}
+        else if(!event.shiftKey&&document.activeElement===last){event.preventDefault();first.focus();}
+      }
+    });
+    window.matchMedia('(min-width:1101px)').addEventListener('change',event=>{if(event.matches)closeMenu();});
+  }
+  $('#year').textContent=String(new Date().getFullYear());
+  if('IntersectionObserver' in window) {
+    const observer=new IntersectionObserver(entries=>{
+      const shown=entries.filter(e=>e.isIntersecting).sort((a,b)=>b.intersectionRatio-a.intersectionRatio)[0];
+      if(!shown)return;
+      $$('#site-nav>a').forEach(a=>{if(a.getAttribute('href')==='#'+shown.target.id)a.setAttribute('aria-current','location');else a.removeAttribute('aria-current');});
+    },{rootMargin:'-15% 0px -55% 0px',threshold:0});
+    ['services','color-studio','standard','why-cimo','contact'].forEach(id=>observer.observe($('#'+id)));
+  }
+  const form=$('#estimate-form'),readyPanel=$('#message-ready');
+  let colorSummary='';
+  function showForm(){form.hidden=false;readyPanel.hidden=true;$('#contact-status').textContent='';}
+  function clearColors(){colorSummary='';$('#estimate-color-note').hidden=true;$('#estimate-colors').textContent='';showForm();}
+  document.addEventListener('cimo:colors',event=>{
+    colorSummary=String(event.detail?.colors||'').slice(0,650);
+    $('#estimate-colors').textContent=colorSummary;$('#estimate-color-note').hidden=!colorSummary;
+    showForm();
+  });
+  $('#remove-estimate-colors').addEventListener('click',clearColors);
+  $$('.service-estimate').forEach(a=>a.addEventListener('click',()=>{form.elements.service.value=a.dataset.service;showForm();}));
+  form.elements.phone.addEventListener('input',()=>form.elements.phone.setCustomValidity(''));
+  form.elements.name.addEventListener('input',()=>form.elements.name.setCustomValidity(''));
+  form.addEventListener('submit',event=>{
+    event.preventDefault();
+    const name=form.elements.name.value.trim(),phone=form.elements.phone.value.trim(),digits=phone.replace(/\D/g,'');
+    form.elements.name.setCustomValidity(name?'':'Please enter your name.');
+    form.elements.phone.setCustomValidity(digits.length>=7&&digits.length<=15?'':'Please enter a phone number with 7 to 15 digits.');
+    if(!form.reportValidity())return;
+    const service=form.elements.service.value,email=form.elements.email.value.trim(),description=form.elements.description.value.trim();
+    const message=[`Hi Justin, I’d like a free estimate.`,``,`Name: ${name}`,`Phone: ${phone}`,email?`Email: ${email}`:null,`Project: ${service}`,description?`\nAbout the project:\n${description}`:null,colorSummary?`\nColor Studio choices (visual approximations):\n${colorSummary}`:null,`\nPlease let me know the next step. Thank you!`].filter(line=>line!==null).join('\n');
+    $('#prepared-message').value=message;
+    $('#email-request').href=`mailto:${config.email}?subject=${encodeURIComponent('Free painting estimate request')}&body=${encodeURIComponent(message)}`;
+    const ios=/iPhone|iPad|iPod/.test(navigator.userAgent)||(navigator.platform==='MacIntel'&&navigator.maxTouchPoints>1);
+    $('#text-request').href=`sms:${config.phone}${ios?'&':'?'}body=${encodeURIComponent(message)}`;
+    form.hidden=true;readyPanel.hidden=false;
+    $('#email-request').focus({preventScroll:true});
+    $('#contact-status').textContent='Nothing has been sent yet. Open an app, review the message, then send it.';
+  });
+  $('#copy-request').addEventListener('click',async()=>{
+    const textarea=$('#prepared-message');
+    try {
+      if(!navigator.clipboard?.writeText)throw new Error('Clipboard unavailable');
+      await navigator.clipboard.writeText(textarea.value);$('#contact-status').textContent='Message copied. Paste it into your email or text app to send.';
+    } catch {
+      textarea.focus();textarea.select();
+      let copied=false;try{copied=document.execCommand('copy');}catch{/* Manual selection remains available. */}
+      $('#contact-status').textContent=copied?'Message copied. Paste it into your email or text app to send.':'Your message is selected. Copy it, then paste it into your email or text app.';
+    }
+  });
+  $('#edit-request').addEventListener('click',()=>{showForm();form.elements.name.focus({preventScroll:true});});
+})();

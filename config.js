@@ -1,2 +1,2 @@
-// Public FormSubmit AJAX endpoint. No credentials belong in this file.
-window.CIMO_CONFIG = Object.freeze({ contactApiUrl: 'https://formsubmit.co/ajax/jcimo47@gmail.com' });
+// Only Justin's explicitly supplied public business contacts. No third-party form routing.
+window.CIMO_CONFIG = Object.freeze({ phone: '+15858809905', displayPhone: '585-880-9905', email: 'cimohomerefreshments@gmail.com' });

@@ -1,321 +1,98 @@
-const Studio = (() => {
-  const canvas = $('#studio-canvas');
-  const ctx = canvas.getContext('2d', { willReadFrequently: true });
-  const mask = document.createElement('canvas');
-  const mctx = mask.getContext('2d', { willReadFrequently: true });
-  const paintLayer = document.createElement('canvas');
-  const paintCtx = paintLayer.getContext('2d');
-  const selectionLayer = document.createElement('canvas');
-  const selectionCtx = selectionLayer.getContext('2d');
-  const proxy = document.createElement('canvas');
-  const proxyCtx = proxy.getContext('2d', { willReadFrequently: true });
-  const proxyMask = document.createElement('canvas');
-  const proxyMaskCtx = proxyMask.getContext('2d', { willReadFrequently: true });
-
-  let source = null;
-  let original = null;
-  let color = '#a85e49';
-  let colorName = 'Terracotta';
-  let tool = 'smart';
-  let drawing = false;
-  let history = [];
-  let previewBlob = null;
-  let renderQueued = false;
-  let showSelection = false;
-  let hasMask = false;
-
-  function status(message) { $('#studio-status').textContent = message; }
-  function resizeAuxiliary(width, height) {
-    for (const c of [mask, paintLayer, selectionLayer]) { c.width = width; c.height = height; }
+/* Cimo Color Studio: deterministic, local-only image operations.
+ * Selection is color/edge assisted, not semantic AI. Unselected pixels are never changed.
+ * UMD keeps the same engine testable in Node and usable without a bundler in browsers. */
+(function (root, factory) {
+  if (typeof module === 'object' && module.exports) module.exports = factory();
+  else root.CimoPaint = factory();
+})(typeof globalThis !== 'undefined' ? globalThis : this, function () {
+  'use strict';
+  const clamp = (x, lo, hi) => Math.max(lo, Math.min(hi, x));
+  function hexRGB(hex) {
+    if (!/^#[\da-f]{6}$/i.test(hex)) throw new TypeError('Use a six-digit hex color.');
+    return [1, 3, 5].map(i => parseInt(hex.slice(i, i + 2), 16));
   }
-  function configureProxy() {
-    const max = 700;
-    const scale = Math.min(1, max / Math.max(canvas.width, canvas.height));
-    proxy.width = Math.max(1, Math.round(canvas.width * scale));
-    proxy.height = Math.max(1, Math.round(canvas.height * scale));
-    proxyMask.width = proxy.width;
-    proxyMask.height = proxy.height;
-    proxyCtx.clearRect(0, 0, proxy.width, proxy.height);
-    proxyCtx.drawImage(source, 0, 0, proxy.width, proxy.height);
-    proxyMaskCtx.clearRect(0, 0, proxy.width, proxy.height);
+  function luminance(data, i) { return .2126 * data[i] + .7152 * data[i + 1] + .0722 * data[i + 2]; }
+  function referenceLight(data, mask) {
+    const bins = new Uint32Array(256); let count = 0;
+    for (let p = 0; p < mask.length; p++) if (mask[p] > 127) { bins[Math.round(luminance(data, p * 4))]++; count++; }
+    if (!count) return 180;
+    let sum = 0;
+    for (let i = 0; i < 256; i++) { sum += bins[i]; if (sum >= count * .6) return Math.max(12, i); }
+    return 180;
   }
-  function setControlsEnabled(enabled) {
-    $('#studio-controls').disabled = !enabled;
-    $('#studio-controls').classList.toggle('ready', enabled);
-    $('.studio-disabled-hint').hidden = enabled;
-    if (enabled) $('#mobile-studio-bar').hidden = false;
-  }
-  function snapshot() {
-    if (!source) return;
-    const scale = 0.5;
-    const c = document.createElement('canvas');
-    c.width = Math.max(1, Math.round(mask.width * scale));
-    c.height = Math.max(1, Math.round(mask.height * scale));
-    const cctx = c.getContext('2d', { willReadFrequently: true });
-    cctx.drawImage(mask, 0, 0, c.width, c.height);
-    history.push({ width: c.width, height: c.height, data: cctx.getImageData(0, 0, c.width, c.height) });
-    if (history.length > 6) history.shift();
-    $('#undo').disabled = history.length < 2;
-  }
-  function restoreSnapshot(snapshotData) {
-    const c = document.createElement('canvas');
-    c.width = snapshotData.width;
-    c.height = snapshotData.height;
-    c.getContext('2d').putImageData(snapshotData.data, 0, 0);
-    mctx.clearRect(0, 0, mask.width, mask.height);
-    mctx.imageSmoothingEnabled = true;
-    mctx.drawImage(c, 0, 0, mask.width, mask.height);
-  }
-  function buildPaintLayer() {
-    paintCtx.clearRect(0, 0, paintLayer.width, paintLayer.height);
-    paintCtx.globalCompositeOperation = 'source-over';
-    paintCtx.globalAlpha = 1;
-    paintCtx.filter = 'none';
-    paintCtx.fillStyle = color;
-    paintCtx.fillRect(0, 0, paintLayer.width, paintLayer.height);
-    paintCtx.globalCompositeOperation = 'destination-in';
-    paintCtx.filter = 'blur(1.5px)';
-    paintCtx.drawImage(mask, 0, 0);
-    paintCtx.filter = 'none';
-    paintCtx.globalCompositeOperation = 'source-over';
-  }
-  function buildSelectionLayer() {
-    selectionCtx.clearRect(0, 0, selectionLayer.width, selectionLayer.height);
-    selectionCtx.globalCompositeOperation = 'source-over';
-    selectionCtx.fillStyle = '#25c9e8';
-    selectionCtx.fillRect(0, 0, selectionLayer.width, selectionLayer.height);
-    selectionCtx.globalCompositeOperation = 'destination-in';
-    selectionCtx.drawImage(mask, 0, 0);
-    selectionCtx.globalCompositeOperation = 'source-over';
-  }
-  function renderInto(targetCtx, split = Number($('#compare-range').value), includeSelection = showSelection) {
-    if (!source) return;
-    targetCtx.globalCompositeOperation = 'source-over';
-    targetCtx.globalAlpha = 1;
-    targetCtx.clearRect(0, 0, canvas.width, canvas.height);
-    targetCtx.drawImage(source, 0, 0);
-    if (!hasMask || split <= 0) return;
-    buildPaintLayer();
-    targetCtx.save();
-    targetCtx.beginPath();
-    targetCtx.rect(0, 0, canvas.width * (Math.max(0, Math.min(100, split)) / 100), canvas.height);
-    targetCtx.clip();
-    targetCtx.globalCompositeOperation = 'color';
-    targetCtx.globalAlpha = 1;
-    targetCtx.drawImage(paintLayer, 0, 0);
-    targetCtx.globalCompositeOperation = 'multiply';
-    targetCtx.globalAlpha = 0.18;
-    targetCtx.drawImage(paintLayer, 0, 0);
-    targetCtx.restore();
-    targetCtx.globalCompositeOperation = 'source-over';
-    targetCtx.globalAlpha = 1;
-    if (includeSelection) {
-      buildSelectionLayer();
-      targetCtx.save();
-      targetCtx.globalAlpha = 0.4;
-      targetCtx.drawImage(selectionLayer, 0, 0);
-      targetCtx.restore();
+  /** Rebuild from original every time. No destructive cumulative blending. */
+  function recolor(data, surfaces) {
+    const out = new Uint8ClampedArray(data);
+    for (const surface of surfaces) {
+      if (!surface.enabled) continue;
+      if (surface.mask.length * 4 !== data.length) throw new RangeError('Mask dimensions do not match the image.');
+      const rgb = hexRGB(surface.color);
+      const ref = surface.reference || referenceLight(data, surface.mask);
+      for (let p = 0; p < surface.mask.length; p++) {
+        const alpha = surface.mask[p] / 255;
+        if (!alpha) continue; // Strict outside-mask invariant, including alpha.
+        const i = p * 4;
+        const shade = clamp((luminance(data, i) + 12) / (ref + 12), .22, 1.45);
+        for (let c = 0; c < 3; c++) out[i + c] = out[i + c] * (1 - alpha) + clamp(rgb[c] * shade, 0, 255) * alpha;
+      }
     }
+    return out;
   }
-  function render(split = Number($('#compare-range').value)) { renderInto(ctx, split, showSelection); }
-  function scheduleRender() {
-    if (renderQueued) return;
-    renderQueued = true;
-    requestAnimationFrame(() => { renderQueued = false; render(); });
+  /** Three opponent-color components. Chroma gets more weight than brightness.
+   * A fixed seed bound prevents gradual drift; a local edge gate stops hard borders. */
+  function colorFeatures(data, width, height) {
+    const n = width * height;
+    if (data.length !== n * 4) throw new RangeError('Image dimensions do not match its data.');
+    const out = new Float32Array(n * 3);
+    for (let y = 0; y < height; y++) for (let x = 0; x < width; x++) {
+      let r = 0, g = 0, b = 0, count = 0;
+      for (let dy = -1; dy <= 1; dy++) for (let dx = -1; dx <= 1; dx++) {
+        const xx = x + dx, yy = y + dy;
+        if (xx < 0 || yy < 0 || xx >= width || yy >= height) continue;
+        const i = (yy * width + xx) * 4;
+        r += data[i]; g += data[i + 1]; b += data[i + 2]; count++;
+      }
+      r /= count; g /= count; b /= count;
+      const j = (y * width + x) * 3;
+      out[j] = .2126 * r + .7152 * g + .0722 * b;
+      out[j + 1] = r - g; out[j + 2] = b - g;
+    }
+    return out;
   }
-  function point(event) {
-    const rect = canvas.getBoundingClientRect();
-    return {
-      x: Math.max(0, Math.min(canvas.width - 1, Math.floor((event.clientX - rect.left) * canvas.width / rect.width))),
-      y: Math.max(0, Math.min(canvas.height - 1, Math.floor((event.clientY - rect.top) * canvas.height / rect.height)))
+  function selectRegion(features, width, height, x, y, tolerance = 18) {
+    const n = width * height;
+    if (features.length !== n * 3) throw new RangeError('Selection features do not match dimensions.');
+    const start = clamp(Math.floor(y), 0, height - 1) * width + clamp(Math.floor(x), 0, width - 1);
+    const seed = start * 3, mask = new Uint8Array(n), seen = new Uint8Array(n), queue = new Int32Array(n);
+    let head = 0, tail = 1, count = 0;
+    queue[0] = start; seen[start] = 1;
+    const limit = clamp(tolerance, 5, 45), edgeLimit = Math.max(5, limit * .7);
+    const distance = (a, b) => {
+      const l = (features[a] - features[b]) * .46;
+      const u = features[a + 1] - features[b + 1], v = features[a + 2] - features[b + 2];
+      return l * l + u * u + v * v;
     };
-  }
-  function updateActionState() {
-    $('#reset').disabled = !hasMask;
-    $('#use-preview').disabled = !hasMask;
-    $('.compare-controls').hidden = !hasMask;
-    $('.canvas-empty').hidden = hasMask;
-  }
-  function applyProxyMask(mode = 'replace') {
-    if (mode === 'replace') mctx.clearRect(0, 0, mask.width, mask.height);
-    mctx.save();
-    mctx.imageSmoothingEnabled = true;
-    mctx.globalCompositeOperation = mode === 'subtract' ? 'destination-out' : 'source-over';
-    mctx.drawImage(proxyMask, 0, 0, mask.width, mask.height);
-    mctx.restore();
-    hasMask = maskHasPixels();
-    updateActionState();
-  }
-  function maskHasPixels() {
-    const data = mctx.getImageData(0, 0, mask.width, mask.height).data;
-    for (let i = 3; i < data.length; i += 4) if (data[i] > 0) return true;
-    return false;
-  }
-  async function smart(x, y, event = {}) {
-    if (!original) return;
-    status('Finding the surface…');
-    await new Promise((resolve) => requestAnimationFrame(resolve));
-    const px = Math.max(0, Math.min(proxy.width - 1, Math.round(x * proxy.width / canvas.width)));
-    const py = Math.max(0, Math.min(proxy.height - 1, Math.round(y * proxy.height / canvas.height)));
-    const image = proxyCtx.getImageData(0, 0, proxy.width, proxy.height);
-    const data = image.data;
-    const start = (py * proxy.width + px) * 4;
-    const target = [data[start], data[start + 1], data[start + 2]];
-    const tolerance = Number($('#tolerance').value);
-    const threshold = Math.pow(tolerance * 2.35, 2);
-    const seen = new Uint8Array(proxy.width * proxy.height);
-    const stackX = new Int32Array(proxy.width * proxy.height * 4);
-    const stackY = new Int32Array(proxy.width * proxy.height * 4);
-    let top = 0;
-    stackX[top] = px; stackY[top] = py; top++;
-    const out = proxyMaskCtx.createImageData(proxy.width, proxy.height);
-    while (top) {
-      top--;
-      const cx = stackX[top];
-      const cy = stackY[top];
-      if (cx < 0 || cy < 0 || cx >= proxy.width || cy >= proxy.height) continue;
-      const q = cy * proxy.width + cx;
-      if (seen[q]) continue;
-      seen[q] = 1;
-      const i = q * 4;
-      const dr = data[i] - target[0];
-      const dg = data[i + 1] - target[1];
-      const db = data[i + 2] - target[2];
-      const dist = dr * dr * 0.30 + dg * dg * 0.59 + db * db * 0.11;
-      if (dist > threshold) continue;
-      out.data[i] = 255; out.data[i + 1] = 255; out.data[i + 2] = 255; out.data[i + 3] = 255;
-      if (top + 4 >= stackX.length) continue;
-      stackX[top] = cx + 1; stackY[top++] = cy;
-      stackX[top] = cx - 1; stackY[top++] = cy;
-      stackX[top] = cx; stackY[top++] = cy + 1;
-      stackX[top] = cx; stackY[top++] = cy - 1;
+    while (head < tail) {
+      const p = queue[head++]; mask[p] = 255; count++;
+      const px = p % width;
+      for (const q of [px ? p - 1 : -1, px < width - 1 ? p + 1 : -1, p >= width ? p - width : -1, p < n - width ? p + width : -1]) {
+        if (q < 0 || seen[q]) continue;
+        if (distance(q * 3, seed) > limit * limit) { seen[q] = 1; continue; }
+        // Do not mark an edge-rejected pixel seen: another same-surface route may reach it.
+        if (distance(q * 3, p * 3) > edgeLimit * edgeLimit) continue;
+        seen[q] = 1; queue[tail++] = q;
+      }
     }
-    proxyMaskCtx.clearRect(0, 0, proxy.width, proxy.height);
-    proxyMaskCtx.putImageData(out, 0, 0);
-    const mode = event.altKey ? 'subtract' : (event.shiftKey ? 'add' : 'replace');
-    applyProxyMask(mode);
-    snapshot();
-    render();
-    status(mode === 'subtract' ? 'Selection removed. Refine it if needed.' : 'Surface selected. Pick a color or refine the selection.');
+    return { mask, count, fraction: count / n };
   }
-  function paintAt(event) {
-    if (!original) return;
-    const p = point(event);
-    mctx.save();
-    mctx.globalCompositeOperation = tool === 'erase' ? 'destination-out' : 'source-over';
-    mctx.fillStyle = '#fff';
-    mctx.beginPath();
-    mctx.arc(p.x, p.y, Number($('#brush-size').value) / 2, 0, Math.PI * 2);
-    mctx.fill();
-    mctx.restore();
-    hasMask = true;
-    updateActionState();
-    scheduleRender();
+  function combineMask(target, other, subtract = false) {
+    if (target.length !== other.length) throw new RangeError('Mask sizes differ.');
+    for (let i = 0; i < target.length; i++) target[i] = subtract ? Math.round(target[i] * (1 - other[i] / 255)) : Math.max(target[i], other[i]);
+    return target;
   }
-  async function load(file) {
-    if (!file) return;
-    if (!['image/jpeg', 'image/png', 'image/webp'].includes(file.type)) { status('Please choose a JPEG, PNG or WebP image.'); return; }
-    if (file.size > 10 * 1024 * 1024) { status('That photo is larger than 10 MB. Please choose a smaller image.'); return; }
-    try {
-      const bmp = await createImageBitmap(file, { imageOrientation: 'from-image' });
-      const scale = Math.min(1, 1800 / Math.max(bmp.width, bmp.height));
-      canvas.width = Math.max(1, Math.round(bmp.width * scale));
-      canvas.height = Math.max(1, Math.round(bmp.height * scale));
-      resizeAuxiliary(canvas.width, canvas.height);
-      ctx.clearRect(0, 0, canvas.width, canvas.height);
-      ctx.drawImage(bmp, 0, 0, canvas.width, canvas.height);
-      source = document.createElement('canvas');
-      source.width = canvas.width; source.height = canvas.height;
-      source.getContext('2d').drawImage(canvas, 0, 0);
-      original = ctx.getImageData(0, 0, canvas.width, canvas.height);
-      mctx.clearRect(0, 0, mask.width, mask.height);
-      history = []; hasMask = false; snapshot(); configureProxy();
-      $('.canvas-wrap').hidden = false;
-      $('#upload-zone').classList.add('compact');
-      setControlsEnabled(true); updateActionState(); render();
-      status('Photo ready. Tap a wall to select a surface.');
-    } catch { status('We couldn’t open that photo. Please try another JPEG, PNG or WebP image.'); }
+  function hasPixels(mask) { return mask.some(a => a > 0); }
+  function cloneScene(scene) {
+    return { active: scene.active, surfaces: scene.surfaces.map(s => ({ ...s, mask: s.mask.slice() })) };
   }
-  function setColor(name, hex) {
-    colorName = name; color = hex.toLowerCase();
-    $$('.swatch').forEach((button) => button.classList.toggle('selected', button.dataset.color === color));
-    $$('.mobile-swatch').forEach((button) => button.classList.toggle('selected', button.dataset.color === color));
-    $('.active-color-swatch').style.background = color;
-    $('#active-color strong').textContent = colorName;
-    $('#active-color small').textContent = color.toUpperCase();
-    $('.mobile-active-color span').style.background = color;
-    render();
-  }
-  function setTool(nextTool) {
-    tool = nextTool;
-    $$('.tool').forEach((button) => {
-      const active = button.dataset.tool === tool;
-      button.classList.toggle('active', active);
-      button.setAttribute('aria-pressed', String(active));
-    });
-    $$('[data-mobile-tool]').forEach((button) => button.setAttribute('aria-pressed', String(button.dataset.mobileTool === tool)));
-  }
-  function setView(value) {
-    $('#compare-range').value = String(value);
-    $('#show-original').setAttribute('aria-pressed', String(value === 0));
-    $('#show-preview').setAttribute('aria-pressed', String(value === 100));
-    render(value);
-  }
-  function setSelectionVisible(value) { showSelection = value; render(); }
-  function undo() {
-    if (history.length < 2) return;
-    history.pop(); restoreSnapshot(history.at(-1));
-    hasMask = maskHasPixels(); updateActionState();
-    $('#undo').disabled = history.length < 2; render();
-  }
-  function reset() {
-    mctx.clearRect(0, 0, mask.width, mask.height);
-    proxyMaskCtx.clearRect(0, 0, proxyMask.width, proxyMask.height);
-    history = []; hasMask = false; snapshot(); updateActionState();
-    $('#undo').disabled = true; $('#show-selection').checked = false; showSelection = false;
-    setView(100); status('Selection cleared. Tap a wall to start again.');
-  }
-  async function exportPreview() {
-    if (!hasMask) return null;
-    const previewCanvas = document.createElement('canvas');
-    previewCanvas.width = canvas.width; previewCanvas.height = canvas.height;
-    renderInto(previewCanvas.getContext('2d'), 100, false);
-    const max = 1600;
-    const width = Math.min(max, canvas.width * 2);
-    const half = Math.floor(width / 2);
-    const height = Math.max(1, Math.round(canvas.height * (half / canvas.width)));
-    const output = document.createElement('canvas');
-    output.width = width; output.height = height;
-    const out = output.getContext('2d');
-    out.drawImage(source, 0, 0, half, height);
-    out.drawImage(previewCanvas, half, 0, half, height);
-    out.fillStyle = 'rgba(20,19,17,.82)'; out.fillRect(0, 0, 94, 30); out.fillRect(half, 0, 94, 30);
-    out.fillStyle = '#fff'; out.font = '700 12px sans-serif'; out.fillText('ORIGINAL', 12, 20); out.fillText('PREVIEW', half + 12, 20);
-    previewBlob = await new Promise((resolve) => output.toBlob(resolve, 'image/jpeg', 0.84));
-    return { blob: previewBlob, color: `${colorName} / ${color.toUpperCase()}`, surface: $('#surface-notes').value.trim() };
-  }
-
-  canvas.addEventListener('pointerdown', async (event) => {
-    if (!original) return;
-    if (tool === 'smart') { const p = point(event); await smart(p.x, p.y, event); return; }
-    drawing = true; canvas.classList.add('editing'); canvas.setPointerCapture(event.pointerId); snapshot(); paintAt(event);
-  });
-  canvas.addEventListener('pointermove', (event) => drawing && tool !== 'smart' && paintAt(event));
-  const endDrawing = () => {
-    if (drawing && tool !== 'smart') snapshot();
-    drawing = false; canvas.classList.remove('editing');
-  };
-  canvas.addEventListener('pointerup', endDrawing);
-  canvas.addEventListener('pointercancel', endDrawing);
-  canvas.addEventListener('dragover', (event) => event.preventDefault());
-  canvas.addEventListener('drop', async (event) => {
-    event.preventDefault();
-    try {
-      const dropped = JSON.parse(event.dataTransfer.getData('text/plain'));
-      setColor(dropped.name, dropped.color);
-      const p = point(event); await smart(p.x, p.y, event);
-    } catch { status('Choose a color from the palette, then try again.'); }
-  });
-
-  return { load, setColor, setTool, setView, setSelectionVisible, render, undo, reset, exportPreview };
-})();
+  return Object.freeze({ clamp, hexRGB, luminance, referenceLight, recolor, colorFeatures, selectRegion, combineMask, hasPixels, cloneScene });
+});
