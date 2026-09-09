@@ -15,43 +15,41 @@ jobs:
       - uses: actions/setup-python@v5
         with:
           python-version: '3.12'
-      - run: pip install Pillow==11.3.0 requests==2.32.5
-      - name: Download only reviewed images and remove metadata
+      - run: pip install Pillow==11.3.0 requests==2.32.5 gdown==5.2.0
+      - name: Download reviewed images with the public download flow
         run: |
           python - <<'PY'
           from pathlib import Path
           from PIL import Image, ImageOps
-          import requests, io, json, hashlib
-          out=Path('assets/projects'); out.mkdir(parents=True,exist_ok=True)
-          items=[
-            ('interior','1OuJgJpN5hocx_2UPlNooYXHppFz9ETOP'),
-            ('preparation','1M4gQ0mFhDz17qQ0Q-ddsoCMZR3xwzr9a'),
-            ('garage','1ox85kS7-Pt55sD023ZVlbtLrbfMM1dnq'),
-            ('workshop','1EKirJEME9nd_SYYKXqPVdOg7r2Wd5ijk'),
-            ('exterior','1WLZchMSuh_XrPYr1CzgRGRPzeO1ZuLex')
-          ]
-          manifest=[]
-          for name, fid in items:
-            r=requests.get('https://drive.google.com/uc',params={'export':'download','id':fid},timeout=90)
-            r.raise_for_status()
-            im=ImageOps.exif_transpose(Image.open(io.BytesIO(r.content))).convert('RGB')
-            for width in [640,1200]:
-              copy=im.copy(); copy.thumbnail((width,width*2),Image.Resampling.LANCZOS)
-              copy.save(out/f'{name}-{width}.webp','WEBP',quality=82,method=6)
-            manifest.append({'asset':name,'source_sha256':hashlib.sha256(r.content).hexdigest(),'original_dimensions':[im.width,im.height]})
-          Path('assets/projects/manifest.json').write_text(json.dumps(manifest,indent=2))
+          import requests, io, json, hashlib, gdown
           r=requests.get('https://images.unsplash.com/photo-1600210492486-724fe5c67fb0?auto=format&fit=crop&w=1200&q=85',timeout=60)
           r.raise_for_status(); im=Image.open(io.BytesIO(r.content)).convert('RGB')
           im.thumbnail((1200,900),Image.Resampling.LANCZOS)
           im.save('assets/studio-room.webp','WEBP',quality=88,method=6)
-          print('Prepared',len(manifest),'project photographs and the existing sample-room image.')
+          out=Path('assets/projects'); out.mkdir(parents=True,exist_ok=True)
+          items=[('interior','1OuJgJpN5hocx_2UPlNooYXHppFz9ETOP'),('preparation','1M4gQ0mFhDz17qQ0Q-ddsoCMZR3xwzr9a'),('garage','1ox85kS7-Pt55sD023ZVlbtLrbfMM1dnq'),('workshop','1EKirJEME9nd_SYYKXqPVdOg7r2Wd5ijk'),('exterior','1WLZchMSuh_XrPYr1CzgRGRPzeO1ZuLex')]
+          manifest=[]
+          for name,fid in items:
+            try:
+              path=gdown.download(id=fid,output=f'/tmp/{name}.jpg',quiet=True,use_cookies=False)
+              if not path: raise RuntimeError('No public download available')
+              data=Path(path).read_bytes()
+              im=ImageOps.exif_transpose(Image.open(io.BytesIO(data))).convert('RGB')
+              for width in [640,1200]:
+                copy=im.copy(); copy.thumbnail((width,width*2),Image.Resampling.LANCZOS)
+                copy.save(out/f'{name}-{width}.webp','WEBP',quality=82,method=6)
+              manifest.append({'asset':name,'source_sha256':hashlib.sha256(data).hexdigest(),'original_dimensions':[im.width,im.height]})
+            except Exception as e:
+              print(name, type(e).__name__,str(e)[:300])
+          Path('assets/projects/manifest.json').write_text(json.dumps(manifest,indent=2))
+          print('Prepared',len(manifest),'project images and existing studio sample.')
           PY
       - name: Commit optimized assets to the isolated review branch
         run: |
           git config user.name 'github-actions[bot]'
           git config user.email '41898282+github-actions[bot]@users.noreply.github.com'
           git add assets/projects assets/studio-room.webp
-          git diff --cached --quiet || git commit -m 'Add reviewed, optimized Cimo project photos and local studio sample'
+          git diff --cached --quiet || git commit -m 'Add local review assets with image metadata removed'
           git push origin HEAD:cimo-studio-refresh-2026-09-09
       - name: Archive source for local browser review
         if: always()
