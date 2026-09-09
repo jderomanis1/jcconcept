@@ -348,11 +348,28 @@
   function syncCompare() {$('#compare-range').value=state.compare;$('#show-original').setAttribute('aria-pressed',String(state.compare===0));$('#show-preview').setAttribute('aria-pressed',String(state.compare===100));$('#canvas-view-label').textContent=state.compare===0?'Original':state.compare===100?'Color preview':'Preview ← | → Original';requestDraw();}
   $('#compare-range').addEventListener('input',event=>{state.compare=Number(event.target.value);syncCompare();});
   $('#show-original').addEventListener('click',()=>{state.compare=0;syncCompare();});$('#show-preview').addEventListener('click',()=>{state.compare=100;syncCompare();});
-  function closeExpanded(){if($('#studio-dialog').open)$('#studio-dialog').close();}
-  $('#expand-studio').addEventListener('click',()=>{lastFocus=document.activeElement;$('#studio-dialog').append(workspace);$('#expand-studio').hidden=true;$('#close-studio').hidden=false;document.body.classList.add('studio-open');$('#studio-dialog').showModal();fit();$('#close-studio').focus({preventScroll:true});});
+  // Touch browsers need an explicit opener: tapping a button need not focus it.
+  // Move the shared editor back synchronously before handing focus to an estimate.
+  function restoreExpanded() {
+    const dialog = $('#studio-dialog');
+    if (dialog.open || workspace.parentElement !== dialog) return;
+    $('#studio-home-slot').append(workspace);
+    $('#expand-studio').hidden = false;
+    $('#close-studio').hidden = true;
+    document.body.classList.remove('studio-open');
+    fit();
+    const opener = lastFocus || $('#expand-studio');
+    lastFocus = null;
+    opener.focus({preventScroll:true});
+  }
+  function closeExpanded() {
+    if ($('#studio-dialog').open) $('#studio-dialog').close();
+    restoreExpanded();
+  }
+  $('#expand-studio').addEventListener('click',event=>{lastFocus=event.currentTarget;$('#studio-dialog').append(workspace);$('#expand-studio').hidden=true;$('#close-studio').hidden=false;document.body.classList.add('studio-open');$('#studio-dialog').showModal();fit();$('#close-studio').focus({preventScroll:true});});
   $('#close-studio').addEventListener('click',closeExpanded);
   $('#studio-dialog').addEventListener('cancel',event=>{if(state.polygon.length){event.preventDefault();state.polygon=[];updateOutline();requestDraw();}});
-  $('#studio-dialog').addEventListener('close',()=>{$('#studio-home-slot').append(workspace);$('#expand-studio').hidden=false;$('#close-studio').hidden=true;document.body.classList.remove('studio-open');fit();lastFocus?.focus({preventScroll:true});});
+  $('#studio-dialog').addEventListener('close',restoreExpanded);
   function summary(){return state.surfaces.filter(s=>s.enabled&&P.hasPixels(s.mask)).map(s=>`${s.name}: ${colorName(s.color)} (${s.color.toUpperCase()})`).join('\n');}
   async function exportPreview(){
     if(!ready()||!summary())throw new Error('Select an area and choose a color first.');

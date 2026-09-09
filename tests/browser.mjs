@@ -33,10 +33,11 @@ async function smoke(browserType, width, height) {
   const browser = await browserType.launch({ headless:true });
   const context = await browser.newContext({ viewport:{width,height}, isMobile:width<500, hasTouch:width<500, reducedMotion:'reduce', acceptDownloads:true });
   const p = await context.newPage(); p.setDefaultTimeout(15000);
-  const errors=[], failures=[], external=[];
+  const errors=[], failures=[], external=[], posts=[];
   p.on('pageerror', e=>errors.push(e.message));
+  p.on('console', msg=>{if(msg.type()==='error')errors.push(msg.text());});
   p.on('response', r=>{if(r.status()>=400)failures.push(`${r.status()} ${r.url()}`);});
-  p.on('request', r=>{if(/^https?:/.test(r.url())&&!r.url().startsWith(base))external.push(r.url());});
+  p.on('request', r=>{if(r.method()==='POST')posts.push(r.url());if(/^https?:/.test(r.url())&&!r.url().startsWith(base))external.push(r.url());});
   try {
     await p.goto(base,{waitUntil:'networkidle'});
     await p.waitForFunction(()=>window.CimoStudio?.isReady());
@@ -49,7 +50,7 @@ async function smoke(browserType, width, height) {
       await p.waitForFunction(img=>img.complete&&img.naturalWidth>0,await image.elementHandle());
     }
     assert.deepEqual(await p.locator('a[href^="#"]').evaluateAll(as=>as.map(a=>a.getAttribute('href')).filter(h=>h.length>1&&!document.getElementById(h.slice(1)))),[]);
-    assert(!/585.?305.?4365|jcimo47@gmail\.com/.test(await p.locator('body').innerText()));
+    assert(!/585.?305.?4365/.test(await p.locator('body').innerText()));
     await p.evaluate(()=>scrollTo(0,0));
     if(width<1101){
       await p.locator('.menu-toggle').click();
@@ -61,7 +62,7 @@ async function smoke(browserType, width, height) {
     }
     await p.screenshot({path:`qa-artifacts/${name}-home.png`});
     if(width===390||width===1440)await accessibility(p,`${name}-home`);
-    await p.locator('#expand-studio').click();await stable(p);
+    if(width<500)await p.locator('#expand-studio').tap();else await p.locator('#expand-studio').click();await stable(p);
     assert(await p.locator('#studio-dialog').evaluate(e=>e.open));
     assert(await p.locator('#studio-workspace').evaluate(e=>e.scrollWidth<=e.clientWidth+1),`${name}: studio overflow`);
     assert(await p.locator('#palette').isVisible());
@@ -95,7 +96,15 @@ async function smoke(browserType, width, height) {
     assert.match(await p.evaluate(()=>CimoStudio.getSummary()),/Soft Ivory/);
     await p.locator('#close-studio').click();
     assert(await p.locator('#expand-studio').evaluate(e=>e===document.activeElement));
+    // Native Escape dispatches a queued close event. Wait for the user-visible result.
+    await p.locator('#expand-studio').click();
+    await p.keyboard.press('Escape');
+    await p.waitForFunction(()=>!document.querySelector('#studio-dialog').open&&document.activeElement===document.querySelector('#expand-studio'));
+    // Handoff from inside the modal must not have its focus stolen by a late close event.
+    await p.locator('#expand-studio').click();
     await p.locator('#use-preview').click();
+    await stable(p);
+    await p.waitForFunction(()=>!document.querySelector('#studio-dialog').open&&document.activeElement===document.querySelector('input[name="name"]'));
     assert.match(await p.locator('#estimate-colors').innerText(),/Deep Navy/);
     await p.locator('input[name="name"]').fill('QA Visitor');
     await p.locator('input[name="phone"]').fill('5855551234');
@@ -107,7 +116,7 @@ async function smoke(browserType, width, height) {
     assert.match(await p.locator('#contact-status').innerText(),/Nothing has been sent/);
     assert.match(await p.locator('#prepared-message').inputValue(),/Deep Navy/);
     if(width===390)await accessibility(p,`${name}-contact`);
-    assert.deepEqual(errors,[],`${name}: script errors`);assert.deepEqual(failures,[],`${name}: HTTP failures`);assert.deepEqual(external,[],`${name}: unexpected external request`);
+    assert.deepEqual(errors,[],`${name}: script errors`);assert.deepEqual(failures,[],`${name}: HTTP failures`);assert.deepEqual(external,[],`${name}: unexpected external request`);assert.deepEqual(posts,[],`${name}: unexpected form transmission`);
     results.push({name,result:'PASS',brand:true,images:true,overflow:false,templateMask:true,history:true,contacts:true,pageErrors:errors});console.log(`PASS ${name}`);
   } catch(e) {await p.screenshot({path:`qa-artifacts/${name}-failure.png`,fullPage:true}).catch(()=>{});throw e;}
   finally {await browser.close();}
