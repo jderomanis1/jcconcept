@@ -1,4 +1,4 @@
-name: Prepare Cimo refresh assets
+name: Apply reviewed Cimo source
 on:
   push:
     branches: [cimo-studio-refresh-2026-09-09]
@@ -6,57 +6,46 @@ on:
 permissions:
   contents: write
 jobs:
-  prepare:
+  apply:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
         with:
           ref: cimo-studio-refresh-2026-09-09
-      - uses: actions/setup-python@v5
-        with:
-          python-version: '3.12'
-      - run: pip install Pillow==11.3.0 requests==2.32.5 gdown==5.2.0
-      - name: Download reviewed images with the public download flow
+      - name: Verify and apply locally tested source without changing its bytes
         run: |
-          python - <<'PY'
+          python3 - <<'PY'
           from pathlib import Path
-          from PIL import Image, ImageOps
-          import requests, io, json, hashlib, gdown
-          r=requests.get('https://images.unsplash.com/photo-1600210492486-724fe5c67fb0?auto=format&fit=crop&w=1200&q=85',timeout=60)
-          r.raise_for_status(); im=Image.open(io.BytesIO(r.content)).convert('RGB')
-          im.thumbnail((1200,900),Image.Resampling.LANCZOS)
-          im.save('assets/studio-room.webp','WEBP',quality=88,method=6)
-          out=Path('assets/projects'); out.mkdir(parents=True,exist_ok=True)
-          items=[('interior','1OuJgJpN5hocx_2UPlNooYXHppFz9ETOP'),('preparation','1M4gQ0mFhDz17qQ0Q-ddsoCMZR3xwzr9a'),('garage','1ox85kS7-Pt55sD023ZVlbtLrbfMM1dnq'),('workshop','1EKirJEME9nd_SYYKXqPVdOg7r2Wd5ijk'),('exterior','1WLZchMSuh_XrPYr1CzgRGRPzeO1ZuLex')]
-          manifest=[]
-          for name,fid in items:
-            try:
-              path=gdown.download(id=fid,output=f'/tmp/{name}.jpg',quiet=True,use_cookies=False)
-              if not path: raise RuntimeError('No public download available')
-              data=Path(path).read_bytes()
-              im=ImageOps.exif_transpose(Image.open(io.BytesIO(data))).convert('RGB')
-              for width in [640,1200]:
-                copy=im.copy(); copy.thumbnail((width,width*2),Image.Resampling.LANCZOS)
-                copy.save(out/f'{name}-{width}.webp','WEBP',quality=82,method=6)
-              manifest.append({'asset':name,'source_sha256':hashlib.sha256(data).hexdigest(),'original_dimensions':[im.width,im.height]})
-            except Exception as e:
-              print(name, type(e).__name__,str(e)[:300])
-          Path('assets/projects/manifest.json').write_text(json.dumps(manifest,indent=2))
-          print('Prepared',len(manifest),'project images and existing studio sample.')
+          import base64, hashlib, json, lzma, shutil
+          packed=base64.b64decode(''.join(Path(f'.transfer/release-{n}.b64').read_text() for n in range(4)),validate=True)
+          assert hashlib.sha256(packed).hexdigest()=='110fd09d5ce32e52d9a935c0e86ce14222e69f045ecfbfd833f367e0e821e2ef'
+          files=json.loads(lzma.decompress(packed))
+          allowed={'index.html','404.html','config.js','base.css','studio.css','site.js','studio-core.js','studio-ui.js','assets/room-illustration.svg','assets/projects/README.md','scripts/stage.py','tests/core.test.cjs','tests/browser.mjs','.github/workflows/qa.yml','.github/workflows/pages.yml','README.md','docs/RELEASE_REVIEW.md','.gitignore'}
+          assert set(files)==allowed
+          for name,content in files.items():
+              path=Path(name);path.parent.mkdir(parents=True,exist_ok=True);path.write_bytes(content.encode('utf-8'))
+              print(hashlib.sha256(path.read_bytes()).hexdigest(),name)
+          for name in ['estimate.js','script.js','studio-touch.js','site.css','responsive.css','revamp.css','styles.css','FEEDBACK.md','assets/projects/manifest.json','.github/workflows/accessibility.yml','.github/workflows/prepare-refresh.yml']:
+              Path(name).unlink(missing_ok=True)
+          shutil.rmtree('.transfer')
           PY
-      - name: Commit optimized assets to the isolated review branch
+      - name: Confirm syntax and deterministic image behavior
+        run: |
+          for file in config.js site.js studio-core.js studio-ui.js; do node --check "$file"; done
+          node --test tests/core.test.cjs
+      - name: Commit the verified source on its review branch
         run: |
           git config user.name 'github-actions[bot]'
           git config user.email '41898282+github-actions[bot]@users.noreply.github.com'
-          git add assets/projects assets/studio-room.webp
-          git diff --cached --quiet || git commit -m 'Add local review assets with image metadata removed'
+          git add -A
+          git commit -m 'Rebuild Cimo branding, painting content and shared Color Studio with functional QA'
           git push origin HEAD:cimo-studio-refresh-2026-09-09
-      - name: Archive source for local browser review
+      - name: Archive applied source
         if: always()
-        run: tar --exclude=.git -czf /tmp/cimo-review-source.tar.gz .
+        run: tar --exclude=.git -czf /tmp/cimo-source.tar.gz .
       - uses: actions/upload-artifact@v4
         if: always()
         with:
-          name: cimo-review-source
-          path: /tmp/cimo-review-source.tar.gz
+          name: cimo-applied-source
+          path: /tmp/cimo-source.tar.gz
           retention-days: 7
