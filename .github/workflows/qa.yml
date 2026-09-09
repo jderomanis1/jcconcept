@@ -1,12 +1,9 @@
 name: Cimo QA
-
 on:
   pull_request:
   workflow_dispatch:
-
 permissions:
   contents: read
-
 jobs:
   verify:
     runs-on: ubuntu-latest
@@ -14,154 +11,34 @@ jobs:
       - uses: actions/checkout@v4
       - uses: actions/setup-node@v4
         with:
-          node-version: 20
-      - name: Static site checks
+          node-version: '22'
+      - name: JavaScript syntax and deterministic image tests
         run: |
-          for file in script.js site.js studio-core.js studio-ui.js studio-touch.js estimate.js; do node --check "$file"; done
-          python3 - <<'PY'
-          from html.parser import HTMLParser
-          from pathlib import Path
-          import json, re
-          html = Path('index.html').read_text(encoding='utf-8')
-          HTMLParser().feed(html)
-          start = html.index('<script type="application/ld+json">') + len('<script type="application/ld+json">')
-          end = html.index('</script>', start)
-          schema = json.loads(html[start:end])
-          assert schema['@type'] == 'HousePainter'
-          assert len(schema['areaServed']) >= 13
-          assert '<span id="year">2026</span>' in html
-          assert 'class="header-contact"' in html
-          assert 'class="standard-flow"' in html
-          assert 'class="closing-card"' in html
-          assert 'class="contact-phone"' in html
-          assert 'data-mobile-tool="pan"' in html
-          assert 'data-mobile-action="fit"' in html
-          assert 'accept="image/*"' in html
-          assert 'assets/cimo-interior.webp' in html
-          assert 'class="hero-img"' in html and 'fetchpriority="high"' in html
-          assert not re.search(r'href="(?:tel|sms):(?!\+1)', html)
-          PY
-          test ! -d server
-          test ! -f render.yaml
-          ! grep -RniE 'nodemailer|GMAIL_APP_PASSWORD|/api/contact|twilio|SMS_' . --exclude-dir=.git
-          grep -q "https://formsubmit.co/ajax/jcimo47@gmail.com" config.js
-          grep -q "JSON.stringify(submissionFields(raw))" estimate.js
-          grep -q "buildMultipartSubmission" estimate.js
-          grep -q "lastTrigger" estimate.js
-          grep -q "dialog.addEventListener('close'" estimate.js
-          grep -q "menu-open" site.js
-          grep -q "event.key === 'Escape'" site.js
-          grep -q "aria-current" site.js
-          grep -q "studio-touch.js" script.js
-          grep -q "Pinch with two fingers" studio-touch.js
-          grep -q "createImageBitmap" studio-touch.js
-          grep -q -- "--section-y" base.css
-          grep -q -- "--fs-h2" base.css
-          grep -q "background:var(--ink)" base.css
-          test -f robots.txt && test -f sitemap.xml && test -f 404.html
-
-  browser-smoke:
-    runs-on: ubuntu-latest
-    steps:
-      - uses: actions/checkout@v4
-      - uses: actions/setup-node@v4
+          for file in config.js site.js studio-core.js studio-ui.js; do node --check "$file"; done
+          node --test tests/core.test.cjs
+      - name: Install pinned test-only dependencies
+        run: |
+          python3 -m pip install Pillow==11.3.0
+          npm install --no-save --package-lock=false playwright@1.55.0 axe-core@4.10.3
+          npx playwright install --with-deps chromium webkit
+      - name: Build the exact Pages directory
+        run: python3 scripts/stage.py
+      - name: Test desktop, mobile, WebKit, accessibility, uploads and export
+        run: |
+          python3 -m http.server 4173 --directory _site >/tmp/cimo-http.log 2>&1 &
+          node tests/browser.mjs
+      - uses: actions/upload-artifact@v4
+        if: always()
         with:
-          node-version: 20
-      - name: Install browser test runtime
-        run: |
-          npm init -y >/dev/null 2>&1
-          npm install --no-save playwright >/dev/null 2>&1
-          npx playwright install --with-deps chromium webkit >/dev/null
-      - name: Run mobile-first browser smoke tests
-        run: |
-          python3 -m http.server 4173 >/tmp/cimo-http.log 2>&1 &
-          cat > browser-smoke.mjs <<'JS'
-          import { chromium, webkit } from 'playwright';
-          import assert from 'node:assert/strict';
-          const url = 'http://127.0.0.1:4173/';
-
-          async function commonChecks(browserType, name, width, height=844) {
-            const browser = await browserType.launch({ headless: true });
-            const context = await browser.newContext({ viewport: { width, height }, isMobile: width <= 430, hasTouch: width <= 430 });
-            const page = await context.newPage();
-            let sawSubmit = false;
-            await page.route('https://formsubmit.co/**', async route => {
-              sawSubmit = true;
-              await route.fulfill({ status: 200, contentType: 'application/json', body: '{"success":true}' });
-            });
-            await page.goto(url, { waitUntil: 'networkidle' });
-            const overflow = await page.evaluate(() => document.documentElement.scrollWidth - innerWidth);
-            assert.ok(overflow <= 1, `${name} ${width}px horizontal overflow: ${overflow}px`);
-
-            const headerColor = await page.locator('.site-header').evaluate(el => getComputedStyle(el).backgroundColor);
-            assert.equal(headerColor, 'rgb(24, 23, 21)', `${name} header not dark`);
-            await page.evaluate(() => scrollTo(0, 300));
-            await page.waitForTimeout(80);
-            const scrolledColor = await page.locator('.site-header').evaluate(el => getComputedStyle(el).backgroundColor);
-            assert.equal(scrolledColor, headerColor, `${name} header flickered color on scroll`);
-
-            const anchorsValid = await page.evaluate(() => [...document.querySelectorAll('a[href^="#"]')].every(a => a.getAttribute('href') === '#home' || document.querySelector(a.getAttribute('href'))));
-            assert.ok(anchorsValid, `${name} has broken in-page anchor`);
-            const contactLinksValid = await page.evaluate(() => [...document.querySelectorAll('a[href^="tel:"],a[href^="sms:"]')].every(a => /^(tel|sms):\+1\d{10}$/.test(a.getAttribute('href'))));
-            assert.ok(contactLinksValid, `${name} has non-E164 contact link`);
-
-            if (width <= 430) {
-              const targets = await page.locator('.mobile-conversion a,.mobile-conversion button').evaluateAll(els => els.map(el => ({h:el.getBoundingClientRect().height,w:el.getBoundingClientRect().width})));
-              assert.ok(targets.every(t => t.h >= 44 && t.w >= 44), `${name} mobile CTA target under 44px`);
-              await page.evaluate(() => scrollTo(0, 0));
-              await page.locator('.menu-toggle').click();
-              await page.waitForTimeout(50);
-              assert.ok(await page.locator('body').evaluate(el => el.classList.contains('menu-open')), `${name} menu did not lock scroll`);
-              assert.ok(await page.locator('#site-nav').evaluate(el => el.contains(document.activeElement)), `${name} menu did not move focus inside`);
-              await page.keyboard.press('Escape');
-              assert.equal(await page.locator('.menu-toggle').getAttribute('aria-expanded'), 'false', `${name} Escape did not close menu`);
-              assert.ok(await page.locator('.menu-toggle').evaluate(el => document.activeElement === el), `${name} focus not restored to menu toggle`);
-
-              await page.locator('#color-studio').scrollIntoViewIfNeeded();
-              await page.locator('#mobile-studio-bar').evaluate(el => { el.hidden = false; });
-              const studioTargets = await page.locator('[data-mobile-tool],[data-mobile-action]').evaluateAll(els => els.map(el => el.getBoundingClientRect().height));
-              assert.ok(studioTargets.every(h => h >= 44), `${name} Color Studio target under 44px`);
-              assert.equal(await page.locator('#photo-input').getAttribute('accept'), 'image/*', `${name} phone photo input not image/*`);
-            }
-
-            const unlabeledIconButtons = await page.evaluate(() => [...document.querySelectorAll('button')].filter(b => !b.textContent.trim() && !b.getAttribute('aria-label')).length);
-            assert.equal(unlabeledIconButtons, 0, `${name} has unlabeled icon-only button`);
-
-            if (width <= 430) await page.locator('.mobile-conversion .estimate-open').click();
-            else await page.locator('.site-header > .estimate-open').click();
-            await page.locator('#estimate-form input[name="name"]').fill('QA Test');
-            await page.locator('#estimate-form input[name="phone"]').fill('5855551234');
-            await page.locator('#estimate-form select[name="service"]').selectOption({ label: 'Interior Painting' });
-            await page.locator('#estimate-form').evaluate(form => form.requestSubmit());
-            await page.waitForTimeout(150);
-            assert.ok(sawSubmit, `${name} estimate form did not reach configured submission path`);
-            await browser.close();
-          }
-
-          for (const width of [360, 390, 430]) await commonChecks(chromium, 'Android Chrome emulation', width);
-          await commonChecks(chromium, 'Desktop Chrome', 1440, 1000);
-          await commonChecks(webkit, 'iOS Safari/WebKit emulation', 390);
-          console.log('Browser smoke tests passed at 360, 390, 430 and desktop, plus WebKit mobile emulation.');
-          JS
-          node browser-smoke.mjs
-
-  lighthouse:
-    runs-on: ubuntu-latest
-    steps:
-      - uses: actions/checkout@v4
-      - uses: actions/setup-node@v4
+          name: cimo-qa-evidence
+          path: qa-artifacts/
+          retention-days: 14
+      - name: Archive tested source
+        if: always()
+        run: tar --exclude=.git --exclude=node_modules --exclude=_site --exclude=qa-artifacts -czf /tmp/cimo-source.tar.gz .
+      - uses: actions/upload-artifact@v4
+        if: always()
         with:
-          node-version: 20
-      - name: Run Lighthouse mobile and desktop
-        run: |
-          python3 -m http.server 4173 >/tmp/cimo-http.log 2>&1 &
-          npx --yes lighthouse http://127.0.0.1:4173/ --quiet --chrome-flags="--headless --no-sandbox" --only-categories=performance,accessibility,best-practices,seo --output=json --output-path=lh-mobile.json
-          npx --yes lighthouse http://127.0.0.1:4173/ --quiet --preset=desktop --chrome-flags="--headless --no-sandbox" --only-categories=performance,accessibility,best-practices,seo --output=json --output-path=lh-desktop.json
-          python3 - <<'PY'
-          import json
-          for label, path in [('MOBILE','lh-mobile.json'),('DESKTOP','lh-desktop.json')]:
-              data=json.load(open(path))
-              scores={k:round(v['score']*100) for k,v in data['categories'].items()}
-              lcp=data['audits'].get('largest-contentful-paint',{}).get('displayValue','n/a')
-              print(label, scores, 'LCP', lcp)
-          PY
+          name: cimo-tested-source
+          path: /tmp/cimo-source.tar.gz
+          retention-days: 7

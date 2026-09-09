@@ -1,19 +1,15 @@
 name: Deploy static site to Pages
-
 on:
   push:
     branches: [main]
   workflow_dispatch:
-
 permissions:
   contents: read
   pages: write
   id-token: write
-
 concurrency:
   group: pages
   cancel-in-progress: true
-
 jobs:
   deploy:
     environment:
@@ -22,11 +18,10 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
-      - name: Stage public website files
+      - name: Stage public website and social card
         run: |
-          mkdir -p _site
-          cp index.html 404.html robots.txt sitemap.xml config.js styles.css base.css studio.css site.css responsive.css revamp.css script.js site.js studio-core.js studio-ui.js studio-touch.js estimate.js _site/
-          cp -R assets _site/assets
+          python3 -m pip install Pillow==11.3.0
+          python3 scripts/stage.py
       - uses: actions/configure-pages@v5
       - uses: actions/upload-pages-artifact@v4
         with:
@@ -34,3 +29,18 @@ jobs:
       - name: Deploy to GitHub Pages
         id: deployment
         uses: actions/deploy-pages@v4
+      - name: Confirm the deployed release and new contacts
+        run: |
+          python3 - <<'PY'
+          import urllib.request, time
+          url='https://jderomanis1.github.io/jcconcept/?release=${{ github.sha }}'
+          for attempt in range(12):
+              try:
+                  html=urllib.request.urlopen(url,timeout=20).read().decode()
+                  assert '20260909' in html and 'cimohomerefreshments@gmail.com' in html
+                  assert '+15858809905' in html and '585-305-4365' not in html
+                  print('Verified deployed Cimo refresh and contact details.');break
+              except Exception:
+                  if attempt==11: raise
+                  time.sleep(10)
+          PY
