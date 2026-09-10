@@ -39,3 +39,4 @@ jobs:
           name: cimo-gallery-source
           path: /tmp/cimo-gallery-source.tar.gz
           retention-days: 7
+# Runtime note: gallery.js is committed before this installer runs so static generation and interaction tests share the same branch state.
