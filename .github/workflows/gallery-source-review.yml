@@ -1,30 +1,53 @@
-name: Review public gallery source
+name: Prepare owner gallery photographs
 on:
   push:
     branches: [cimo-gallery-cleaning-2026-09-10]
     paths: [.github/workflows/gallery-source-review.yml]
 permissions:
-  contents: read
+  contents: write
 jobs:
-  review:
+  prepare:
     runs-on: ubuntu-latest
-    timeout-minutes: 3
+    timeout-minutes: 4
     steps:
-      - name: Read only the owner-provided public booking page
+      - uses: actions/checkout@v4
+        with:
+          ref: cimo-gallery-cleaning-2026-09-10
+      - run: python3 -m pip install --disable-pip-version-check Pillow==11.3.0
+      - name: Read published project photos and strip metadata
         run: |
-          mkdir -p /tmp/cimo-source-review
           python3 - <<'PY'
           from urllib.request import urlopen
           from pathlib import Path
-          import re,html,json
-          page=urlopen('https://cimohomerefreshments.setmore.com/',timeout=40).read().decode()
-          Path('/tmp/cimo-source-review/setmore.html').write_text(page)
-          urls=sorted(set(html.unescape(u) for u in re.findall(r'https[^\s\"<>]+',page) if any(h in u for h in ['storage.anywhereworks','gallery','avatar.setmore'])))
-          Path('/tmp/cimo-source-review/image-urls.json').write_text(json.dumps(urls,indent=2))
-          print('Read public page:',len(page),'characters;',len(urls),'candidate asset URLs.')
+          from PIL import Image,ImageOps
+          import io,json,hashlib
+          pairs=[('f7PSUS9VlH0K','bb0216f9-73be-4516-bb9a-6381384f2325'),('f0BD6qtZM7GO','082ed040-7685-4ac2-a535-bb92da46414c'),('fen2DL0Ge9O4','b5d50327-6505-4744-8ff1-9dbbabea4195'),('ffjpazgLaVnt','0a4383c8-c14b-477d-98d1-35f3b5060a36'),('fj25qaeAGsCW','40b137b1-3a1a-486c-8760-39a20e66c52b')]
+          out=Path('assets/gallery');out.mkdir(parents=True,exist_ok=True)
+          records=[]
+          for n,(folder,fid) in enumerate(pairs,1):
+              url=f'https://images.setmore.com/files/img/{folder}/{fid}.jpeg'
+              raw=urlopen(url,timeout=40).read()
+              im=ImageOps.exif_transpose(Image.open(io.BytesIO(raw))).convert('RGB')
+              rec={'id':f'published-{n}','source':url,'source_sha256':hashlib.sha256(raw).hexdigest(),'original_size':list(im.size),'edits':'Orientation, downsampling and metadata removal only; no generative changes.','outputs':{}}
+              for suffix,maxsize,quality in [('full',1400,85),('thumb',560,80)]:
+                  copy=im.copy();copy.thumbnail((maxsize,maxsize),Image.Resampling.LANCZOS)
+                  p=out/f'published-{n}-{suffix}.webp'
+                  Image.frombytes('RGB',copy.size,copy.tobytes()).save(p,'WEBP',quality=quality,method=6)
+                  rec['outputs'][suffix]={'path':str(p),'sha256':hashlib.sha256(p.read_bytes()).hexdigest(),'size':list(copy.size)}
+              records.append(rec)
+          Path('docs/gallery-published-sources.json').write_text(json.dumps(records,indent=2)+'\n')
           PY
+      - name: Commit on the review branch
+        run: |
+          git config user.name 'github-actions[bot]'
+          git config user.email '41898282+github-actions[bot]@users.noreply.github.com'
+          git add assets/gallery docs/gallery-published-sources.json
+          git diff --cached --quiet || git commit -m 'Add metadata-free local copies of owner-published gallery photos'
+          git push origin HEAD:cimo-gallery-cleaning-2026-09-10
       - uses: actions/upload-artifact@v4
         with:
-          name: cimo-setmore-source-review
-          path: /tmp/cimo-source-review
-          retention-days: 2
+          name: cimo-owner-gallery-photos
+          path: |
+            assets/gallery/
+            docs/gallery-published-sources.json
+          retention-days: 7
