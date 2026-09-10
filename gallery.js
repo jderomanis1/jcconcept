@@ -10,7 +10,7 @@
   const links = cards.map(card => card.querySelector('.gallery-photo')).filter(Boolean);
   const photos = links.map(link => ({
     id: link.dataset.id,
-    theme: link.dataset.theme,
+    themes: (link.dataset.themes || '').split(/\s+/).filter(Boolean),
     title: link.dataset.title,
     status: link.dataset.status,
     caption: link.dataset.caption,
@@ -20,7 +20,8 @@
     card: link.closest('.gallery-card')
   }));
   const byId = new Map(photos.map(photo => [photo.id, photo]));
-  const allowedThemes = new Set(['all', ...photos.map(photo => photo.theme)]);
+  const allowedThemes = new Set(['all', ...photos.flatMap(photo => photo.themes)]);
+  const hasTheme = (photo, value) => value === 'all' || photo.themes.includes(value);
 
   const image = dialog.querySelector('#viewer-image');
   const loading = dialog.querySelector('#viewer-loading');
@@ -60,8 +61,11 @@
 
   function updateTheme(nextTheme, { updateUrl = false } = {}) {
     theme = allowedThemes.has(nextTheme) ? nextTheme : 'all';
-    visible = photos.filter(photo => theme === 'all' || photo.theme === theme);
-    cards.forEach(card => { card.hidden = theme !== 'all' && card.dataset.theme !== theme; });
+    visible = photos.filter(photo => hasTheme(photo, theme));
+    cards.forEach(card => {
+      const cardThemes = (card.dataset.themes || '').split(/\s+/).filter(Boolean);
+      card.hidden = theme !== 'all' && !cardThemes.includes(theme);
+    });
     filters.querySelectorAll('[data-theme]').forEach(button => {
       button.setAttribute('aria-pressed', String(button.dataset.theme === theme));
     });
@@ -133,8 +137,8 @@
 
   function openPhoto(photo, { push = false, focusClose = true } = {}) {
     if (!photo) return;
-    if (theme !== 'all' && photo.theme !== theme) updateTheme(photo.theme);
-    visible = photos.filter(item => theme === 'all' || item.theme === theme);
+    if (theme !== 'all' && !hasTheme(photo, theme)) updateTheme(photo.themes[0] || 'all');
+    visible = photos.filter(item => hasTheme(item, theme));
     const index = visible.findIndex(item => item.id === photo.id);
     if (index < 0) return;
     if (!dialog.open) {

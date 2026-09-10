@@ -1,15 +1,15 @@
 {
   "themes": {
     "all": "All work",
-    "interiors": "Interiors & trim",
-    "outdoors": "Outdoor details",
-    "preparation": "Preparation",
-    "workshop": "Workshop & metalwork"
+    "interiors": "Indoor work",
+    "outdoors": "Outdoor work",
+    "preparation": "Preparation & protection",
+    "workshop": "Metalwork & details"
   },
   "photos": [
     {
       "id": "porch-railing",
-      "theme": "outdoors",
+      "themes": ["outdoors", "workshop"],
       "title": "Porch railing & entry",
       "status": "Finish detail",
       "caption": "Black metal railing beside a white porch column. A closer look at the detail work.",
@@ -21,7 +21,7 @@
     },
     {
       "id": "hallway",
-      "theme": "interiors",
+      "themes": ["interiors"],
       "title": "Gray walls & white trim",
       "status": "Interior detail",
       "caption": "A hallway view showing wall color, paneled doors and contrasting white trim.",
@@ -33,7 +33,7 @@
     },
     {
       "id": "covered-porch",
-      "theme": "outdoors",
+      "themes": ["outdoors"],
       "title": "Covered porch refresh",
       "status": "Outdoor detail",
       "caption": "Porch flooring, painted framing and railing, viewed from inside the covered space.",
@@ -45,7 +45,7 @@
     },
     {
       "id": "stained-post",
-      "theme": "outdoors",
+      "themes": ["outdoors", "preparation"],
       "title": "Stained wood post",
       "status": "Stain detail",
       "caption": "Warm wood stain on an outdoor light post. The work-area protection is still in place.",
@@ -57,7 +57,7 @@
     },
     {
       "id": "window-preparation",
-      "theme": "preparation",
+      "themes": ["interiors", "preparation"],
       "title": "Protecting the window details",
       "status": "In progress",
       "caption": "Masking around a bay window and visible wall repairs before the finish coats.",
@@ -69,7 +69,7 @@
     },
     {
       "id": "porch-entry",
-      "theme": "outdoors",
+      "themes": ["outdoors"],
       "title": "Porch from the garden",
       "status": "Outdoor detail",
       "caption": "A second view of the porch, showing the white railing and entry from the garden path.",
@@ -81,7 +81,7 @@
     },
     {
       "id": "workshop-shelving",
-      "theme": "workshop",
+      "themes": ["interiors", "preparation", "workshop"],
       "title": "Workshop metalwork preparation",
       "status": "In progress",
       "caption": "Metal shelving with taped edges during preparation. Shown as work in progress, not a completed workshop renovation.",
@@ -93,7 +93,7 @@
     },
     {
       "id": "railing-closeup",
-      "theme": "outdoors",
+      "themes": ["outdoors", "workshop"],
       "title": "The railing, up close",
       "status": "Finish detail",
       "caption": "A close view of the black handrail finish and its curved metalwork.",
