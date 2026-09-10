@@ -1,0 +1,21 @@
+{
+  "asset": "garage-example.webp",
+  "kind": "licensed illustrative photo, not a Cimo project",
+  "author": "KK Buys Indy Homes",
+  "source_page": "https://unsplash.com/photos/a-white-two-story-house-with-a-garage-6I3tJUF1jA4",
+  "license": "Unsplash License",
+  "download_url": "https://images.unsplash.com/photo-1764339838883-4728d4bcfe49?auto=format&fit=crop&fm=jpg&w=3000&q=90",
+  "source_sha256": "531539c8f73b252155618513f1daf97e0e8a776dea7b753518be630dfc0b98f4",
+  "crop_pixels": [
+    1650,
+    700,
+    2850,
+    1600
+  ],
+  "output_size": [
+    960,
+    720
+  ],
+  "output_sha256": "86b492cc405a30fe2f0afcb98a12e6c2f7cacdd85009a96ccc6ded215eaa41b5",
+  "changes": "Crop to garage, excluding the street number; downsize and remove metadata. No repainting, object removal or generative edits."
+}

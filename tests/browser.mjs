@@ -51,6 +51,7 @@ async function smoke(browserType, width, height) {
     }
     assert.deepEqual(await p.locator('a[href^="#"]').evaluateAll(as=>as.map(a=>a.getAttribute('href')).filter(h=>h.length>1&&!document.getElementById(h.slice(1)))),[]);
     assert(!/585.?305.?4365/.test(await p.locator('body').innerText()));
+    if(width===390||width===1440)await p.locator('#services').screenshot({path:`qa-artifacts/${name}-services.png`,style:".site-header,.mobile-conversion,.skip-link{visibility:hidden!important}"});
     await p.evaluate(()=>scrollTo(0,0));
     if(width<1101){
       await p.locator('.menu-toggle').click();

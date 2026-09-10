@@ -1,0 +1,96 @@
+[
+  {
+    "asset": "interior-finish.avif",
+    "source": "20251031_164239.jpg",
+    "source_sha256": "2474524b1a0f6cf9c2d084e016fa170ef738472a8ead383ed5c2e4b66c77bd4f",
+    "original_size": [
+      4000,
+      3000
+    ],
+    "crop_pixels": null,
+    "brightness_factor": 1.035,
+    "contrast_factor": 1.015,
+    "unsharp_mask": {
+      "radius": 0.8,
+      "percent": 65,
+      "threshold": 3
+    },
+    "output_size": [
+      800,
+      600
+    ],
+    "output_sha256": "98843bdcde372273a8b41d70e3fd92cd966cf93ea2135b30e12eea7f6a5ee66b",
+    "synthetic_changes": false,
+    "output_encoding": {
+      "format": "AVIF",
+      "quality": 40,
+      "speed": 4
+    }
+  },
+  {
+    "asset": "surface-prep-detail.avif",
+    "source": "20251123_103813.jpg",
+    "source_sha256": "e199b6bb22a3cd1dec0dad7bd5d4a4a0462b6fee29f592f2897f5d8c21c5751f",
+    "original_size": [
+      4000,
+      3000
+    ],
+    "crop_pixels": [
+      350,
+      140,
+      3910,
+      2810
+    ],
+    "brightness_factor": 1.025,
+    "contrast_factor": 1.015,
+    "unsharp_mask": {
+      "radius": 0.8,
+      "percent": 65,
+      "threshold": 3
+    },
+    "output_size": [
+      800,
+      600
+    ],
+    "output_sha256": "aed23b1c7f9c11b9cc12b85e7974926fda329dc4692e004ff2a1ad181b7b3b3e",
+    "synthetic_changes": false,
+    "output_encoding": {
+      "format": "AVIF",
+      "quality": 40,
+      "speed": 4
+    }
+  },
+  {
+    "asset": "workshop-prep.avif",
+    "source": "20260810_143227.jpg",
+    "source_sha256": "47489e260570b3b479ba4aa9ec8a2177379c04e76db956b41fdf620323ec11cb",
+    "original_size": [
+      2252,
+      4000
+    ],
+    "crop_pixels": [
+      0,
+      500,
+      2252,
+      2189
+    ],
+    "brightness_factor": 1.025,
+    "contrast_factor": 1.015,
+    "unsharp_mask": {
+      "radius": 0.8,
+      "percent": 65,
+      "threshold": 3
+    },
+    "output_size": [
+      800,
+      600
+    ],
+    "output_sha256": "2f7316c7a5fa92c875ddc99d3def1bc4868a5eccf443d4888ef8c38359dca0a7",
+    "synthetic_changes": false,
+    "output_encoding": {
+      "format": "AVIF",
+      "quality": 40,
+      "speed": 4
+    }
+  }
+]

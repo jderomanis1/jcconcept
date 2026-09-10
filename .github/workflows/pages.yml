@@ -23,7 +23,7 @@ jobs:
         with:
           node-version: '22'
       - name: Verify image-engine invariants
-        run: node --test tests/core.test.cjs
+        run: node --test tests/core.test.cjs tests/content.test.cjs
       - name: Stage public website and social card
         run: |
           python3 -m pip install --disable-pip-version-check Pillow==11.3.0
