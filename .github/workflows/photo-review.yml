@@ -1,0 +1,30 @@
+name: Review garage photo options
+on:
+  push:
+    branches: [cimo-photo-copy-2026-09-10]
+    paths: [.github/workflows/photo-review.yml]
+permissions:
+  contents: read
+jobs:
+  review:
+    runs-on: ubuntu-latest
+    timeout-minutes: 3
+    steps:
+      - name: Fetch two publicly licensed references for review
+        run: |
+          mkdir -p /tmp/photo-review
+          python3 - <<'PY'
+          from pathlib import Path
+          from urllib.request import urlopen
+          items = [('garage-coffman','photo-1704833414862-ee79382c146f'),('garage-point3d','photo-1635108198854-26645ffe6714')]
+          for name,photo in items:
+              url = f'https://images.unsplash.com/{photo}?auto=format&fit=crop&w=1200&q=88'
+              data = urlopen(url,timeout=45).read()
+              Path(f'/tmp/photo-review/{name}.jpg').write_bytes(data)
+              print(name,len(data))
+          PY
+      - uses: actions/upload-artifact@v4
+        with:
+          name: garage-photo-options
+          path: /tmp/photo-review
+          retention-days: 7
