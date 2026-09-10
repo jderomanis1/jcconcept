@@ -1,0 +1,30 @@
+name: Review public gallery source
+on:
+  push:
+    branches: [cimo-gallery-cleaning-2026-09-10]
+    paths: [.github/workflows/gallery-source-review.yml]
+permissions:
+  contents: read
+jobs:
+  review:
+    runs-on: ubuntu-latest
+    timeout-minutes: 3
+    steps:
+      - name: Read only the owner-provided public booking page
+        run: |
+          mkdir -p /tmp/cimo-source-review
+          python3 - <<'PY'
+          from urllib.request import urlopen
+          from pathlib import Path
+          import re,html,json
+          page=urlopen('https://cimohomerefreshments.setmore.com/',timeout=40).read().decode()
+          Path('/tmp/cimo-source-review/setmore.html').write_text(page)
+          urls=sorted(set(html.unescape(u) for u in re.findall(r'https[^\s\"<>]+',page) if any(h in u for h in ['storage.anywhereworks','gallery','avatar.setmore'])))
+          Path('/tmp/cimo-source-review/image-urls.json').write_text(json.dumps(urls,indent=2))
+          print('Read public page:',len(page),'characters;',len(urls),'candidate asset URLs.')
+          PY
+      - uses: actions/upload-artifact@v4
+        with:
+          name: cimo-setmore-source-review
+          path: /tmp/cimo-source-review
+          retention-days: 2
