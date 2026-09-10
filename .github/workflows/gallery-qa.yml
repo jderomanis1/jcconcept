@@ -1,0 +1,50 @@
+name: Cimo gallery QA
+on:
+  pull_request:
+  workflow_run:
+    workflows: [Deploy static site to Pages]
+    types: [completed]
+permissions:
+  contents: read
+jobs:
+  gallery:
+    if: github.event_name != 'workflow_run' || (github.event.workflow_run.conclusion == 'success' && github.event.workflow_run.head_branch == 'main')
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          ref: ${{ github.event.workflow_run.head_sha || github.sha }}
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+      - name: Check source, photography, no-price content and original design preservation
+        run: |
+          node --check gallery.js
+          node --test tests/core.test.cjs tests/content.test.cjs tests/gallery.test.cjs
+      - name: Install pinned build and browser-test dependencies
+        timeout-minutes: 5
+        run: |
+          python3 -m pip install --disable-pip-version-check Pillow==11.3.0
+          npm install --no-save --package-lock=false --no-audit --no-fund --fetch-retries=1 --fetch-timeout=45000 playwright@1.55.0 axe-core@4.10.3
+          npx --no-install playwright install --with-deps chromium webkit
+      - name: Stage the exact public release
+        run: python3 scripts/stage.py
+      - name: Verify local gallery, cleaning, keyboard, touch and return-home journeys
+        if: github.event_name != 'workflow_run'
+        run: |
+          python3 -m http.server 4173 --directory _site >/tmp/gallery-http.log 2>&1 &
+          node tests/gallery-browser.mjs
+      - name: Verify all deployed files and live gallery journeys
+        if: github.event_name == 'workflow_run'
+        env:
+          SITE_URL: https://jderomanis1.github.io/jcconcept/
+        run: |
+          python3 scripts/verify_live.py
+          node tests/gallery-browser.mjs
+      - uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: ${{ github.event_name == 'workflow_run' && 'cimo-gallery-live-evidence' || 'cimo-gallery-qa-evidence' }}
+          path: qa-artifacts/
+          retention-days: 30
