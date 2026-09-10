@@ -10,13 +10,13 @@ jobs:
     runs-on: ubuntu-latest
     timeout-minutes: 3
     steps:
-      - name: Fetch two publicly licensed references for review
+      - name: Fetch two publicly licensed residential references for review
         run: |
           mkdir -p /tmp/photo-review
           python3 - <<'PY'
           from pathlib import Path
           from urllib.request import urlopen
-          items = [('garage-coffman','photo-1704833414862-ee79382c146f'),('garage-point3d','photo-1635108198854-26645ffe6714')]
+          items = [('garage-wangenheim','photo-1692133188474-8c5591e6a6a8'),('garage-indy','photo-1764339838883-4728d4bcfe49')]
           for name,photo in items:
               url = f'https://images.unsplash.com/{photo}?auto=format&fit=crop&w=1200&q=88'
               data = urlopen(url,timeout=45).read()
