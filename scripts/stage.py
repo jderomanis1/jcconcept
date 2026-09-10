@@ -8,7 +8,7 @@ if OUT.exists():
     shutil.rmtree(OUT)
 OUT.mkdir()
 FILES = ['index.html','404.html','robots.txt','sitemap.xml','config.js','base.css','studio.css','site.js','studio-core.js','studio-ui.js']
-ASSETS = ['favicon.svg','studio-room.webp','room-illustration.svg','projects/interior.webp','projects/preparation.webp','projects/garage.webp','projects/workshop.webp']
+ASSETS = ['favicon.svg','studio-room.webp','room-illustration.svg','projects/interior-finish.avif','projects/surface-prep-detail.avif','projects/garage-example.webp','projects/workshop-prep.avif']
 for name in FILES:
     shutil.copy2(ROOT / name, OUT / name)
 for name in ASSETS:

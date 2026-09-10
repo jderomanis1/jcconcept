@@ -1,10 +1,19 @@
-# Project-photo provenance
+# Service photography
 
-These four photographs were supplied by Justin Cimo in the shared Painting stuff folder for use on this website. Copies are resized, cropped and metadata-stripped WebP images. Source originals are not published.
+The service-card layout is unchanged. The three AVIF photographs are derived from Justin’s supplied project folder. A licensed garage example is labeled as illustrative on the public page.
 
-- interior.webp: 20251126_164814.jpg; stairwell in progress, not a finished-project claim.
-- preparation.webp: 20231207_105451.jpg; surface repairs and protection in progress.
-- garage.webp: 20250726_142750.jpg; before preparation.
-- workshop.webp: 20260901_100724.jpg; painted workshop panel detail.
+| Public asset | What is actually shown | Source |
+|---|---|---|
+| `interior-finish.avif` | Interior hallway, painted walls, white doors and trim | Justin’s `20251031_164239.jpg` |
+| `surface-prep-detail.avif` | Window masking and surface repairs before painting | Justin’s `20251123_103813.jpg` |
+| `workshop-prep.avif` | Masked workshop metal shelving during preparation | Justin’s `20260810_143227.jpg` |
+| `garage-example.webp` | Residential garage exterior, not a Cimo project | KK Buys Indy Homes, Unsplash |
 
-The hero/Color Studio living-room image is the existing site's Unsplash sample (`photo-1600210492486-724fe5c67fb0`), clearly identified as inspiration, not a Cimo project. It is served locally to avoid cross-origin canvas and privacy failures. The second template is an original geometric room illustration, not a project photograph.
+Project-photo edits are limited to orientation, crop, modest global brightness/contrast, restrained sharpening and resizing. No objects, paint colors, surface defects or workmanship are altered. Raw photos and EXIF/GPS metadata are not published.
+
+Recipes and hashes: `docs/project-photo-sources.json`.
+Garage source and license: `docs/garage-photo-source.json`.
+Garage photo: https://unsplash.com/photos/a-white-two-story-house-with-a-garage-6I3tJUF1jA4
+License: https://unsplash.com/license
+
+Prepared Color Studio templates are unchanged and remain separate from project photography.
