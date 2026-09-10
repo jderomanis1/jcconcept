@@ -1,0 +1,142 @@
+[
+  {
+    "id": "published-1",
+    "source": "https://images.setmore.com/files/img/f7PSUS9VlH0K/bb0216f9-73be-4516-bb9a-6381384f2325.jpeg",
+    "source_sha256": "33d0749e8ad245b5717b56603b32576002be91e8be1d40809ae2d74f888f0e16",
+    "original_size": [
+      1920,
+      2560
+    ],
+    "edits": "Orientation, downsampling and metadata removal only; no generative changes.",
+    "outputs": {
+      "full": {
+        "path": "assets/gallery/published-1-full.webp",
+        "sha256": "e91c75a405ed72e812723cf3c5832cc4a8c11cc74895b765ab9699e642450361",
+        "size": [
+          1050,
+          1400
+        ]
+      },
+      "thumb": {
+        "path": "assets/gallery/published-1-thumb.webp",
+        "sha256": "e2941cc6bfde9a009fa6c18760b49597354eb0eba5d448803f98a39f401b47ed",
+        "size": [
+          420,
+          560
+        ]
+      }
+    }
+  },
+  {
+    "id": "published-2",
+    "source": "https://images.setmore.com/files/img/f0BD6qtZM7GO/082ed040-7685-4ac2-a535-bb92da46414c.jpeg",
+    "source_sha256": "23a23006e9b28450c3b8325de10a86c15c998012c5f85bf9dcc4b88896dfa673",
+    "original_size": [
+      2560,
+      1920
+    ],
+    "edits": "Orientation, downsampling and metadata removal only; no generative changes.",
+    "outputs": {
+      "full": {
+        "path": "assets/gallery/published-2-full.webp",
+        "sha256": "3075c57e0cf175acc537b85b3a0398fe4762a18d715ddb490701ab6e17f06603",
+        "size": [
+          1400,
+          1050
+        ]
+      },
+      "thumb": {
+        "path": "assets/gallery/published-2-thumb.webp",
+        "sha256": "da452381215f250bf2c8fb39891a0dd325571d7e390dc28ec94cdd1301cc0da4",
+        "size": [
+          560,
+          420
+        ]
+      }
+    }
+  },
+  {
+    "id": "published-3",
+    "source": "https://images.setmore.com/files/img/fen2DL0Ge9O4/b5d50327-6505-4744-8ff1-9dbbabea4195.jpeg",
+    "source_sha256": "64605c0fc048cf831cc83d24a81d33c92c79f86f9373ada673c8a31e4f7775bc",
+    "original_size": [
+      2560,
+      1920
+    ],
+    "edits": "Orientation, downsampling and metadata removal only; no generative changes.",
+    "outputs": {
+      "full": {
+        "path": "assets/gallery/published-3-full.webp",
+        "sha256": "a1232e561fd717c076dca22d74319c98905d63b40e5c7017a4078fee82e5ebf8",
+        "size": [
+          1400,
+          1050
+        ]
+      },
+      "thumb": {
+        "path": "assets/gallery/published-3-thumb.webp",
+        "sha256": "2355771d95e172082a1ca6eff66a100a617fda2a19577532eb14be99806157de",
+        "size": [
+          560,
+          420
+        ]
+      }
+    }
+  },
+  {
+    "id": "published-4",
+    "source": "https://images.setmore.com/files/img/ffjpazgLaVnt/0a4383c8-c14b-477d-98d1-35f3b5060a36.jpeg",
+    "source_sha256": "018c2ad1510e5f750112449be7a2d6a104077e7fe9cf3b1cae966108a91c392b",
+    "original_size": [
+      1920,
+      2560
+    ],
+    "edits": "Orientation, downsampling and metadata removal only; no generative changes.",
+    "outputs": {
+      "full": {
+        "path": "assets/gallery/published-4-full.webp",
+        "sha256": "b13935af51c6ae22e88b31c0f3fca81035d63cf74319b08e98890eb6456cc146",
+        "size": [
+          1050,
+          1400
+        ]
+      },
+      "thumb": {
+        "path": "assets/gallery/published-4-thumb.webp",
+        "sha256": "e569e39e1821726f572faf13ca69cfd24aa1d584bb6cbd35af673e259cd53dc1",
+        "size": [
+          420,
+          560
+        ]
+      }
+    }
+  },
+  {
+    "id": "published-5",
+    "source": "https://images.setmore.com/files/img/fj25qaeAGsCW/40b137b1-3a1a-486c-8760-39a20e66c52b.jpeg",
+    "source_sha256": "6616f712e0a82ab6fb6b32f38f49d0b37dc085d3615d5c25cfdf13f4ebc18b13",
+    "original_size": [
+      2560,
+      1920
+    ],
+    "edits": "Orientation, downsampling and metadata removal only; no generative changes.",
+    "outputs": {
+      "full": {
+        "path": "assets/gallery/published-5-full.webp",
+        "sha256": "8747a3e0fff6df57923338168242a33c9c856517ae019e39c8731b115e8dd3e0",
+        "size": [
+          1400,
+          1050
+        ]
+      },
+      "thumb": {
+        "path": "assets/gallery/published-5-thumb.webp",
+        "sha256": "1f517ceb017e87b379410700dfa3ebb8c7eb627b27079576c296366b2e2679f9",
+        "size": [
+          560,
+          420
+        ]
+      }
+    }
+  }
+]

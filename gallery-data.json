@@ -1,0 +1,107 @@
+{
+  "themes": {
+    "all": "All work",
+    "interiors": "Interiors & trim",
+    "outdoors": "Outdoor details",
+    "preparation": "Preparation",
+    "workshop": "Workshop & metalwork"
+  },
+  "photos": [
+    {
+      "id": "porch-railing",
+      "theme": "outdoors",
+      "title": "Porch railing & entry",
+      "status": "Finish detail",
+      "caption": "Black metal railing beside a white porch column. A closer look at the detail work.",
+      "alt": "Black metal handrail beside front steps, a white column and potted flowers",
+      "full": "assets/gallery/published-5-full.webp",
+      "thumb": "assets/gallery/published-5-thumb.webp",
+      "width": 1400,
+      "height": 1050
+    },
+    {
+      "id": "hallway",
+      "theme": "interiors",
+      "title": "Gray walls & white trim",
+      "status": "Interior detail",
+      "caption": "A hallway view showing wall color, paneled doors and contrasting white trim.",
+      "alt": "Gray hallway walls with white paneled doors and trim",
+      "full": "assets/projects/interior-finish.avif",
+      "thumb": "assets/projects/interior-finish.avif",
+      "width": 800,
+      "height": 600
+    },
+    {
+      "id": "covered-porch",
+      "theme": "outdoors",
+      "title": "Covered porch refresh",
+      "status": "Outdoor detail",
+      "caption": "Porch flooring, painted framing and railing, viewed from inside the covered space.",
+      "alt": "Covered porch with a gray floor, light painted ceiling beams and white railing",
+      "full": "assets/gallery/published-2-full.webp",
+      "thumb": "assets/gallery/published-2-thumb.webp",
+      "width": 1400,
+      "height": 1050
+    },
+    {
+      "id": "stained-post",
+      "theme": "outdoors",
+      "title": "Stained wood post",
+      "status": "Stain detail",
+      "caption": "Warm wood stain on an outdoor light post. The work-area protection is still in place.",
+      "alt": "Stained wooden outdoor lamp post with protective cloth around its base",
+      "full": "assets/gallery/published-1-full.webp",
+      "thumb": "assets/gallery/published-1-thumb.webp",
+      "width": 1050,
+      "height": 1400
+    },
+    {
+      "id": "window-preparation",
+      "theme": "preparation",
+      "title": "Protecting the window details",
+      "status": "In progress",
+      "caption": "Masking around a bay window and visible wall repairs before the finish coats.",
+      "alt": "Bay window surrounded by protective masking and visible wall preparation",
+      "full": "assets/projects/surface-prep-detail.avif",
+      "thumb": "assets/projects/surface-prep-detail.avif",
+      "width": 800,
+      "height": 600
+    },
+    {
+      "id": "porch-entry",
+      "theme": "outdoors",
+      "title": "Porch from the garden",
+      "status": "Outdoor detail",
+      "caption": "A second view of the porch, showing the white railing and entry from the garden path.",
+      "alt": "White porch railing and entry seen from a garden path",
+      "full": "assets/gallery/published-3-full.webp",
+      "thumb": "assets/gallery/published-3-thumb.webp",
+      "width": 1400,
+      "height": 1050
+    },
+    {
+      "id": "workshop-shelving",
+      "theme": "workshop",
+      "title": "Workshop metalwork preparation",
+      "status": "In progress",
+      "caption": "Metal shelving with taped edges during preparation. Shown as work in progress, not a completed workshop renovation.",
+      "alt": "Dark metal workshop shelving with blue painter’s tape along the shelf edges",
+      "full": "assets/projects/workshop-prep.avif",
+      "thumb": "assets/projects/workshop-prep.avif",
+      "width": 800,
+      "height": 600
+    },
+    {
+      "id": "railing-closeup",
+      "theme": "outdoors",
+      "title": "The railing, up close",
+      "status": "Finish detail",
+      "caption": "A close view of the black handrail finish and its curved metalwork.",
+      "alt": "Close-up of black painted metal handrail beside green planting",
+      "full": "assets/gallery/published-4-full.webp",
+      "thumb": "assets/gallery/published-4-thumb.webp",
+      "width": 1050,
+      "height": 1400
+    }
+  ]
+}
