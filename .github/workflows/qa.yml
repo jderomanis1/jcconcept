@@ -16,7 +16,7 @@ jobs:
       - name: JavaScript syntax and deterministic image tests
         run: |
           for file in config.js site.js studio-core.js studio-ui.js; do node --check "$file"; done
-          node --test tests/core.test.cjs
+          node --test tests/core.test.cjs tests/content.test.cjs
       - name: Install image-build dependency
         timeout-minutes: 2
         run: python3 -m pip install --disable-pip-version-check Pillow==11.3.0

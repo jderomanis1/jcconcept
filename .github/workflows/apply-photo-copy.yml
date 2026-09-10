@@ -1,0 +1,42 @@
+name: Apply verified photo and copy refresh
+on:
+  push:
+    branches: [cimo-photo-copy-2026-09-10]
+    paths: [.github/workflows/apply-photo-copy.yml]
+permissions:
+  contents: write
+jobs:
+  apply:
+    runs-on: ubuntu-latest
+    timeout-minutes: 4
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          ref: cimo-photo-copy-2026-09-10
+      - name: Verify and apply the reviewed content bundle
+        run: |
+          python3 - <<'PY'
+          from pathlib import Path
+          import base64,hashlib,lzma,json,shutil
+          packed=base64.b64decode(''.join(Path(f'.transfer/photo-copy-{n}.b64').read_text() for n in range(2)),validate=True)
+          assert hashlib.sha256(packed).hexdigest()=='acfa9ed1f0037f8ccf94809f755fe924895b282063e38099715c84874d1af33e'
+          files=json.loads(lzma.decompress(packed))
+          allowed={'index.html','scripts/stage.py','tests/browser.mjs','tests/content.test.cjs','assets/projects/README.md','docs/PHOTO_COPY_REVIEW.md','docs/project-photo-sources.json','docs/design-preservation.json','sitemap.xml'}
+          assert set(files)==allowed
+          for name,content in files.items():
+              p=Path(name);p.parent.mkdir(parents=True,exist_ok=True);p.write_bytes(content.encode('utf-8'))
+              print(hashlib.sha256(p.read_bytes()).hexdigest(),name)
+          shutil.rmtree('.transfer')
+          PY
+      - name: Check image integrity, design preservation and unchanged Color Studio behavior
+        run: |
+          for file in config.js site.js studio-core.js studio-ui.js; do node --check "$file"; done
+          node --test tests/core.test.cjs tests/content.test.cjs
+      - name: Commit the reviewed files on the isolated branch
+        run: |
+          git config user.name 'github-actions[bot]'
+          git config user.email '41898282+github-actions[bot]@users.noreply.github.com'
+          git add -A
+          test -z "$(git diff --cached --name-only -- .github/workflows)"
+          git commit -m 'Refresh service photography and Rochester copy without changing design or Color Studio'
+          git push origin HEAD:cimo-photo-copy-2026-09-10
