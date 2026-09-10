@@ -175,7 +175,10 @@
     render(current + delta);
     const url = new URL(location.href);
     url.hash = `photo=${encodeURIComponent(visible[current].id)}`;
-    history.replaceState({ ...(history.state || {}), cimoGalleryPhoto: true, photo: visible[current].id }, '', url);
+    const state = history.state?.cimoGalleryPhoto
+      ? { ...(history.state || {}), cimoGalleryPhoto: true, photo: visible[current].id }
+      : history.state;
+    history.replaceState(state, '', url);
   }
 
   filters.hidden = false;
