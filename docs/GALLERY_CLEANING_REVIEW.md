@@ -1,11 +1,17 @@
-# Gallery and Cleaning additions
+# Gallery and Cleaning refinements
 
-Preserves the approved website design and all original runtime JavaScript, stylesheets and Color Studio assets. Adds a separate gallery and compact home-page Cleaning section, with Gallery and Cleaning in navigation.
+Preserves the approved website design, painting focus and Color Studio. Gallery and Cleaning remain in the main navigation.
 
-Gallery uses the owner-published Setmore photos and previously reviewed owner project photos only. No stock garage photo, Color Studio templates, invented before/after pairs, customer names, addresses or unverified whole-project claims. Work in progress is labeled. Photos are served locally. Source provenance remains in gallery-published-sources.json and project-photo-sources.json.
+## Gallery
 
-The viewer offers theme filters, previous/next, arrow keys, Escape, touch swiping, visible close and Home controls, deep links, browser Back, focus/scroll restoration and image-error recovery. Without JavaScript, every photo and Home link is still available.
+Gallery uses owner-published Setmore photos and previously reviewed owner project photos only. No stock garage image or Color Studio template is used in the gallery. Photos remain unique in the All Work view, while each photo may belong to more than one relevant theme. This avoids duplicate cards and ensures every theme has at least three useful photos.
 
-Cleaning content is based on https://cimohomerefreshments.setmore.com/ as reviewed September 10, 2026: kitchens/bathrooms, deep/whole-home and move-in/out cleaning; phone consultation, on-site walkthrough and full-home evaluation. No cleaning prices are copied or embedded. The external booking site opens in a new tab and retains its own content. No appointment is booked automatically. No unapproved cleaner profile or contact is published.
+Current theme counts: Indoor work (3), Outdoor work (5), Preparation & protection (3), Metalwork & details (3). Work in progress remains clearly labeled. Viewer behavior still includes filters, previous/next, arrow keys, Escape, touch swiping, visible close and Home controls, deep links, browser Back, focus/scroll restoration and image-error recovery.
 
-Painting remains the primary service. Cleaning is arranged separately from the preparation and cleanup included with painting.
+## Cleaning
+
+Cleaning is intentionally lightweight because it is a referral path rather than a primary Cimo service. The Cimo page now summarizes kitchens and bathrooms, deep or whole-home needs, high-traffic areas, special requests and move-in/move-out cleaning using three compact visual cards.
+
+There is no Cleaning booking-site redirect from the Cimo section. Interested visitors stay on the Cimo site and can ask Justin about cleaning through the existing contact flow or text him directly. The page describes the referral as a trusted family cleaning partner without publishing an unapproved cleaner profile, separate phone number or external booking flow.
+
+No cleaning prices are copied or embedded. Painting remains the primary Cimo service, and the Cleaning section is clearly presented as a separate referral option.
